@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ERU Checklist</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <!-- Floating progress box -->
+  <div id="progress-box">
+    <div class="label">PROGRESS</div>
+    <div id="progress-percent">0%</div>
+  </div>
+
+  <div class="container">
+    <h1>ERU CHECKLIST</h1>
+
+    {% for section, items in grouped_checklist.items() %}
+      <section class="section">
+        <h2 class="section-header">{{ section }}</h2>
+        <ul class="task-list">
+          {% for item in items %}
+          <li class="task-row">
+            <span class="task-text{% if item.checked %} checked{% endif %}">
+              {{ item.task }}
+            </span>
+            <input class="task-checkbox"
+                   type="checkbox"
+                   data-id="{{ item.id }}"
+                   {% if item.checked %}checked{% endif %}>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
