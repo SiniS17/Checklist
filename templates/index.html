@@ -7,90 +7,71 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <body>
-    <div class="container">
-      <h1>Checklist</h1>
-      <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
-
-      <!-- Tabs -->
-      <div class="tabs" role="tablist" aria-label="Sheets">
+    <!-- Floating hamburger for mobile -->
+    <button id="fab-menu" aria-label="Open sheets menu" title="Sheets">
+      <span></span><span></span><span></span>
+    </button>
+    <div id="side-overlay"></div>
+    <nav id="side-drawer" aria-label="Sheets">
+      <div class="drawer-title">Sheets</div>
+      <div class="drawer-tabs">
         {% for s in model.sheets %}
           <button class="tab-btn{% if loop.first %} active{% endif %}"
                   data-tab="tab-{{ loop.index0 }}"
-                  role="tab"
                   aria-selected="{{ 'true' if loop.first else 'false' }}">
             {{ s.name }}
           </button>
         {% endfor %}
       </div>
+    </nav>
 
-      <!-- Tab Panels -->
+    <div class="container">
+      <h1>Checklist</h1>
+      <button id="reset-btn" class="reset-btn">Reset All</button>
+      <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
+
+      <!-- Tabs (Desktop) -->
+      <div class="tabs">
+        {% for s in model.sheets %}
+          <button class="tab-btn{% if loop.first %} active{% endif %}" data-tab="tab-{{ loop.index0 }}">{{ s.name }}</button>
+        {% endfor %}
+      </div>
+
+      <!-- Sheet Panels -->
       {% for s in model.sheets %}
-        <section id="tab-{{ loop.index0 }}" class="tab-panel{% if loop.first %} active{% endif %}" role="tabpanel">
+        <section id="tab-{{ loop.index0 }}" class="tab-panel{% if loop.first %} active{% endif %}">
           {% set sheet_index = loop.index0 %}
-          {% set note_c = s.note_col %}
-          {% set has_note = (note_c is not none) %}
-
-          {% if not has_note %}
-            <div class="note-warning">
-              No column with header containing “Note” was found in the first 3 rows.
-              This sheet will be shown without checkboxes.
-            </div>
-          {% endif %}
-
-          <table class="grid">
-            <tbody>
-            {% for row in s.rows %}
-              {% if row.type == 'warning' %}
-                <tr class="warning-row">
-                  <td class="warning-cell" colspan="{{ s.max_cols + (1 if has_note else 0) }}">
-                    ⚠️ {{ row.text }}
-                  </td>
-                </tr>
-              {% else %}
+          <div class="table-wrap">
+            <table class="grid">
+              <tbody>
+              {% for row in s.rows %}
+                {% if row.type == 'warning' %}
+                  <tr class="warning-row">
+                    <td class="warning-cell" colspan="{{ s.max_cols + 1 }}">
+                      ⚠️ {{ row.html | safe }}
+                    </td>
+                  </tr>
+                {% else %}
                 <tr>
                   {% for cell in row.cells %}
-                    <td {% if cell.rowspan>1 %}rowspan="{{ cell.rowspan }}"{% endif %}
-                        {% if cell.colspan>1 %}colspan="{{ cell.colspan }}"{% endif %}>
-                      {{ cell.value }}
-                    </td>
+                    <td>{{ cell.html | safe }}</td>
                   {% endfor %}
-
-                  {% if has_note %}
-                    {# Place checkbox into the Note column position: if the row has fewer than note_col cells at this point,
-                       add filler <td>s so that the checkbox lands in the Note column. #}
-                    {% set rendered_cols = 0 %}
-                    {% for cell in row.cells %}
-                      {% set rendered_cols = rendered_cols + cell.colspan %}
-                    {% endfor %}
-                    {% if rendered_cols < note_c - 1 %}
-                      {% for i in range(rendered_cols, note_c - 1) %}
-                        <td></td>
-                      {% endfor %}
-                    {% endif %}
-
-                    <td class="note-col">
-                      <input type="checkbox"
-                             class="task-checkbox"
-                             data-sheet="{{ sheet_index }}"
-                             data-key="{{ loop.index0 }}"
-                             aria-label="Complete row {{ loop.index }} in sheet {{ s.name }}">
-                    </td>
-                  {% endif %}
+                  <td>
+                    <input type="checkbox" class="task-checkbox"
+                           data-sheet="{{ sheet_index }}"
+                           data-key="{{ loop.index0 }}">
+                  </td>
                 </tr>
-              {% endif %}
-            {% endfor %}
-            </tbody>
-          </table>
+
+                {% endif %}
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </section>
       {% endfor %}
     </div>
 
-    <script>
-      window._CHECKLIST_META = {
-        fileKey: "{{ model.file_name }}",
-        sheetCount: {{ model.sheets|length }}
-      };
-    </script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
   </body>
 </html>

@@ -1,87 +1,115 @@
 (function () {
-  // Tabs: show all, highlight active, others clickable
-  document.querySelectorAll(".tab-btn").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      document.querySelectorAll(".tab-btn").forEach(function (b) {
-        b.classList.remove("active");
-        b.setAttribute("aria-selected", "false");
-      });
-      document.querySelectorAll(".tab-panel").forEach(function (p) {
-        p.classList.remove("active");
-      });
-      btn.classList.add("active");
-      btn.setAttribute("aria-selected", "true");
-      const id = btn.getAttribute("data-tab");
-      document.getElementById(id).classList.add("active");
+  // === TAB SWITCHING ===
+  function activateTab(btn) {
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      b.classList.remove("active");
+      b.setAttribute("aria-selected", "false");
+    });
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+    const panel = document.getElementById(btn.dataset.tab);
+    if (panel) panel.classList.add("active");
+  }
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activateTab(btn);
+      closeDrawer();
     });
   });
 
-  // Storage helpers (per file & per sheet scopes)
-  const meta = window._CHECKLIST_META || { fileKey: "default", sheetCount: 0 };
-  function storageKey(sheetIndex) {
-    return "ckl__" + meta.fileKey + "__s" + sheetIndex;
+  // === MOBILE DRAWER ===
+  const fab = document.getElementById("fab-menu");
+  const drawer = document.getElementById("side-drawer");
+  const overlay = document.getElementById("side-overlay");
+
+  function openDrawer() {
+    drawer.classList.add("open");
+    overlay.classList.add("show");
   }
-  function loadSheetState(sheetIndex) {
-    try {
-      const raw = localStorage.getItem(storageKey(sheetIndex));
-      return raw ? JSON.parse(raw) : {};
-    } catch (_) { return {}; }
-  }
-  function saveSheetState(sheetIndex, state) {
-    try {
-      localStorage.setItem(storageKey(sheetIndex), JSON.stringify(state));
-    } catch (_) { /* ignore */ }
+  function closeDrawer() {
+    drawer.classList.remove("open");
+    overlay.classList.remove("show");
   }
 
-  // Bucket checkboxes by sheet and enforce strict sequence:
-  // - A checkbox is DISABLED until the previous one is checked.
-  // - Unchecking a box clears & disables all following boxes.
+  if (fab) fab.addEventListener("click", openDrawer);
+  if (overlay) overlay.addEventListener("click", closeDrawer);
+
+  // === CHECKBOX LOGIC ===
   const all = Array.from(document.querySelectorAll(".task-checkbox"));
   const bySheet = {};
-  all.forEach(function (box) {
+
+  all.forEach(box => {
     const si = parseInt(box.dataset.sheet, 10);
     if (!bySheet[si]) bySheet[si] = [];
     bySheet[si].push(box);
   });
 
-  Object.keys(bySheet).forEach(function (k) {
+  Object.keys(bySheet).forEach(k => {
     const si = parseInt(k, 10);
     const boxes = bySheet[si];
-    const state = loadSheetState(si);
+    const stateKey = "ckl__" + si;
+    const stored = JSON.parse(localStorage.getItem(stateKey) || "{}");
 
-    // Restore checked state
-    boxes.forEach(function (box, idx) {
-      box.checked = !!state[idx];
+    // Restore checked boxes & strikethrough (skip header row)
+    boxes.forEach((b, i) => {
+      b.checked = !!stored[i];
+      const r = b.closest("tr");
+      if (b.checked && r && !r.classList.contains("header-row")) {
+        r.classList.add("strike");
+      }
     });
 
-    // Apply gating (disable until previous is checked)
-    function applyGating() {
-      boxes.forEach(function (box, idx) {
-        if (idx === 0) {
-          box.disabled = false; // first one always available
-        } else {
-          box.disabled = !boxes[idx - 1].checked;
-        }
+    function updateState() {
+      const st = {};
+      boxes.forEach((b, i) => (st[i] = b.checked));
+      localStorage.setItem(stateKey, JSON.stringify(st));
+    }
+
+    function applyRules() {
+      boxes.forEach((b, i) => {
+        if (i === 0) b.disabled = false;
+        else b.disabled = !boxes[i - 1].checked;
       });
     }
-    applyGating();
 
     // Change handler
-    boxes.forEach(function (box, idx) {
-      box.addEventListener("change", function () {
-        if (!box.checked) {
-          // Uncheck and disable all later boxes
-          for (let j = idx + 1; j < boxes.length; j++) {
+    boxes.forEach((b, i) => {
+      b.addEventListener("change", () => {
+        const row = b.closest("tr");
+        const isHeaderRow = row && row.querySelectorAll("th, strong").length > 0 && i === 0;
+
+        if (b.checked && row && !isHeaderRow) {
+          row.classList.add("strike");
+        } else if (row) {
+          row.classList.remove("strike");
+          // uncheck & remove strike from following rows
+          for (let j = i + 1; j < boxes.length; j++) {
             boxes[j].checked = false;
+            const r = boxes[j].closest("tr");
+            if (r) r.classList.remove("strike");
           }
         }
-        // Persist
-        const next = {};
-        boxes.forEach(function (b, i2) { next[i2] = b.checked; });
-        saveSheetState(si, next);
-        // Re-apply gating after any change
-        applyGating();
+
+        updateState();
+        applyRules();
       });
     });
+
+    applyRules();
   });
+
+  // === RESET BUTTON ===
+  const reset = document.getElementById("reset-btn");
+  if (reset) {
+    reset.addEventListener("click", () => {
+      if (confirm("Clear all checkboxes and progress?")) {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith("ckl__")) localStorage.removeItem(key);
+        });
+        location.reload();
+      }
+    });
+  }
 })();
