@@ -238,7 +238,7 @@ table.grid td:last-child {
     justify-content: center;
   }
 
-  /* Remove horizontal scroll - disable sticky on mobile */
+  /* Keep sticky checkbox on mobile */
   .table-wrap {
     overflow-x: auto;
     overflow-y: visible;
@@ -267,8 +267,10 @@ table.grid td:last-child {
 
   table.grid td:last-child {
     width: 10%;
-    position: static;
-    box-shadow: none;
+    position: sticky;
+    right: 0;
+    background: var(--card);
+    box-shadow: -2px 0 4px rgba(0,0,0,0.05);
     min-width: 40px;
   }
 
