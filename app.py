@@ -7,54 +7,58 @@ EXCEL_PATH = Path("Checklist.xlsx")
 
 app = Flask(__name__, template_folder=str(APP_ROOT / "templates"), static_folder=str(APP_ROOT / "static"))
 
+
 def html_escape(s: str) -> str:
     return (
         s.replace("&", "&amp;")
-         .replace("<", "&lt;")
-         .replace(">", "&gt;")
-         .replace('"', "&quot;")
-         .replace("'", "&#39;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#39;")
     )
+
 
 def to_html_with_style(cell):
     """Return cell value as HTML preserving bold/red font, including rich text."""
     v = cell.value
     if v is None:
         return ""
-    
+
     # Check if cell has rich text (partial formatting)
-    if hasattr(cell, 'font') and hasattr(cell, '_value') and hasattr(cell._value, '__iter__'):
-        try:
-            # Try to access rich text runs
-            rich_text = cell._value
-            if hasattr(rich_text, '__iter__') and not isinstance(rich_text, str):
-                html_parts = []
-                for run in rich_text:
-                    if hasattr(run, 'text') and hasattr(run, 'font'):
-                        text = html_escape(str(run.text))
-                        # Check for bold
-                        if getattr(run.font, 'bold', False):
-                            text = f"<strong>{text}</strong>"
-                        # Check for red color
-                        color = getattr(run.font, 'color', None)
-                        if color and getattr(color, 'rgb', None):
-                            rgb = color.rgb.upper()
-                            if rgb.endswith("FF0000") or rgb[-6:] == "FF0000":
+    # Rich text is stored as a list-like object, not a plain string
+    try:
+        from openpyxl.cell.text import InlineFont
+        from openpyxl.cell.rich_text import TextBlock, CellRichText
+
+        # Check if the cell's internal value is a CellRichText object
+        if isinstance(cell._value, CellRichText):
+            html_parts = []
+            for item in cell._value:
+                if isinstance(item, TextBlock):
+                    text = html_escape(str(item.text))
+                    # Check for bold
+                    if item.font and getattr(item.font, 'b', False):
+                        text = f"<strong>{text}</strong>"
+                    # Check for red color
+                    if item.font and item.font.color:
+                        color = item.font.color
+                        if hasattr(color, 'rgb') and color.rgb:
+                            rgb = str(color.rgb).upper()
+                            if 'FF0000' in rgb:
                                 text = f'<span class="red-text">{text}</span>'
-                        html_parts.append(text)
-                    elif isinstance(run, str):
-                        html_parts.append(html_escape(run))
-                if html_parts:
-                    result = ''.join(html_parts)
-                    # Handle line breaks
-                    if "\n" in str(v) and len(str(v).split("\n")) <= 3 and len(str(v)) < 30:
-                        result = result.replace("\n", " ")
-                    else:
-                        result = result.replace("\n", "<br>")
-                    return result
-        except:
-            pass  # Fall back to regular processing
-    
+                    html_parts.append(text)
+                else:
+                    # Plain string part
+                    html_parts.append(html_escape(str(item)))
+
+            if html_parts:
+                result = ''.join(html_parts)
+                # Handle line breaks
+                result = result.replace("\n", "<br>")
+                return result
+    except Exception as e:
+        pass  # Fall back to regular processing
+
     # Regular processing (no rich text)
     raw = str(v)
     if "\n" in raw and len(raw.split("\n")) <= 3 and len(raw) < 30:
@@ -62,13 +66,14 @@ def to_html_with_style(cell):
     else:
         text = html_escape(raw).replace("\n", "<br>")
 
-    # Bold & red detection for entire cell
-    is_bold = getattr(cell.font, "bold", False)
-    color = getattr(cell.font, "color", None)
+    # Only apply cell-level formatting if it's actually set
+    # Don't apply bold/red to the entire cell unless explicitly formatted
+    is_bold = getattr(cell.font, "bold", False) if cell.font else False
+    color = getattr(cell.font, "color", None) if cell.font else None
     is_red = False
     if color and getattr(color, "rgb", None):
-        rgb = color.rgb.upper()
-        if rgb.endswith("FF0000") or rgb[-6:] == "FF0000":
+        rgb = str(color.rgb).upper()
+        if 'FF0000' in rgb:
             is_red = True
 
     if is_bold:
@@ -76,6 +81,7 @@ def to_html_with_style(cell):
     if is_red:
         text = f'<span class="red-text">{text}</span>'
     return text
+
 
 def _merged_map(ws):
     top_left = {}
@@ -90,11 +96,13 @@ def _merged_map(ws):
                 covers.add((rr, cc))
     return top_left, covers
 
+
 def _row_has_warning(ws, r, merged_top_left):
     for (rr, cc), (rs, cs) in merged_top_left.items():
         if rr == r and cs >= 2:
             return True
     return False
+
 
 def parse_workbook(path: Path):
     wb = load_workbook(filename=str(path), data_only=True)
@@ -118,7 +126,7 @@ def parse_workbook(path: Path):
             c = 1
             # Skip the last column (Note column)
             max_col = ws.max_column - 1 if ws.max_column > 1 else ws.max_column
-            
+
             while c <= max_col:
                 if (r, c) in merged_covers:
                     span = merged_top_left.get((r, c))
@@ -147,10 +155,12 @@ def parse_workbook(path: Path):
 
     return {"file_name": path.name, "sheets": sheets}
 
+
 @app.route("/")
 def index():
     model = parse_workbook(EXCEL_PATH)
     return render_template("index.html", model=model)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

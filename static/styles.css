@@ -60,13 +60,13 @@ h1 { margin: 0 0 6px; }
 .tab-panel { display: none; margin-top: 16px; }
 .tab-panel.active { display: block; }
 
-.table-wrap { 
+.table-wrap {
   overflow-x: auto;
   position: relative;
   width: 100%;
 }
-table.grid { 
-  width: 100%; 
+table.grid {
+  width: 100%;
   border-collapse: collapse;
   table-layout: auto;
 }
