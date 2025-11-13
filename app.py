@@ -82,11 +82,17 @@ def parse_workbook(path: Path):
 
             cells = []
             c = 1
-            while c <= ws.max_column:
+            # Skip the last column (Note column)
+            max_col = ws.max_column - 1 if ws.max_column > 1 else ws.max_column
+            
+            while c <= max_col:
                 if (r, c) in merged_covers:
                     span = merged_top_left.get((r, c))
                     if span:
                         rs, cs = span
+                        # If merged cell extends into note column, reduce colspan
+                        if c + cs - 1 > max_col:
+                            cs = max_col - c + 1
                         html = to_html_with_style(ws.cell(row=r, column=c))
                         cells.append({"html": html, "rowspan": rs, "colspan": cs})
                         c += cs
@@ -102,7 +108,7 @@ def parse_workbook(path: Path):
         sheets.append({
             "name": ws.title,
             "rows": rows,
-            "max_cols": ws.max_column
+            "max_cols": max_col
         })
 
     return {"file_name": path.name, "sheets": sheets}
