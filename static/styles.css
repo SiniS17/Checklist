@@ -15,6 +15,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   padding: 20px;
+  overflow-x: hidden;
 }
 
 .container {
@@ -62,12 +63,9 @@ h1 { margin: 0 0 6px; }
 .table-wrap { 
   overflow-x: auto;
   position: relative;
+  width: 100%;
 }
-/* Better table spacing on mobile */
-  table.grid td {
-    padding: 10px 8px;
-    font-size: 14px;
-  }table.grid { 
+table.grid { 
   width: 100%; 
   border-collapse: collapse;
   table-layout: auto;
@@ -214,12 +212,14 @@ table.grid td:last-child {
 /* Mobile optimizations */
 @media (max-width: 768px) {
   body {
-    padding: 12px;
+    padding: 8px;
+    overflow-x: hidden;
   }
 
   .container {
-    padding: 20px 16px;
-    margin: 16px auto;
+    padding: 16px 12px;
+    margin: 12px auto;
+    max-width: 100%;
   }
 
   h1 {
@@ -238,9 +238,43 @@ table.grid td:last-child {
     justify-content: center;
   }
 
+  /* Remove horizontal scroll - disable sticky on mobile */
+  .table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+
+  table.grid {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 100%;
+  }
+
+  table.grid td:first-child {
+    width: 28%;
+    font-size: 13px;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  table.grid td:nth-child(2) {
+    width: 62%;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  table.grid td:last-child {
+    width: 10%;
+    position: static;
+    box-shadow: none;
+    min-width: 40px;
+  }
+
   /* Better table spacing on mobile */
   table.grid td {
-    padding: 10px 8px;
+    padding: 10px 6px;
     font-size: 14px;
   }
 
@@ -258,18 +292,39 @@ table.grid td:last-child {
 }
 
 @media (max-width: 480px) {
+  body {
+    padding: 4px;
+  }
+
   .container {
-    padding: 16px 12px;
+    padding: 12px 8px;
     border-radius: 12px;
+    margin: 8px auto;
   }
 
   h1 {
     font-size: 20px;
   }
 
+  .table-wrap {
+    margin: 0 -8px;
+    padding: 0 8px;
+  }
+
   table.grid td {
-    padding: 8px 6px;
+    padding: 8px 4px;
     font-size: 13px;
+  }
+
+  table.grid td:first-child {
+    width: 30%;
+    font-size: 12px;
+    padding: 8px 3px;
+  }
+
+  table.grid td:nth-child(2) {
+    width: 60%;
+    font-size: 12px;
   }
 
   #fab-menu {
