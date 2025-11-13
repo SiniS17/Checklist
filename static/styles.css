@@ -59,12 +59,35 @@ h1 { margin: 0 0 6px; }
 .tab-panel { display: none; margin-top: 16px; }
 .tab-panel.active { display: block; }
 
-.table-wrap { overflow-x: auto; }
-table.grid { width: 100%; border-collapse: collapse; }
+.table-wrap { 
+  overflow-x: auto;
+  position: relative;
+}
+table.grid { 
+  width: 100%; 
+  border-collapse: collapse;
+  table-layout: fixed;
+}
 table.grid td {
   padding: 8px 10px;
   border-bottom: 1px solid #e5e7eb;
   vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+/* Content cell takes remaining space */
+table.grid td:not(:last-child) {
+  width: auto;
+}
+/* Checkbox column fixed width, always visible */
+table.grid td:last-child {
+  width: 50px;
+  min-width: 50px;
+  text-align: center;
+  position: sticky;
+  right: 0;
+  background: var(--card);
+  box-shadow: -2px 0 4px rgba(0,0,0,0.05);
 }
 .warning-row td.warning-cell {
   background: #fff7ed;
