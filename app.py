@@ -17,18 +17,52 @@ def html_escape(s: str) -> str:
     )
 
 def to_html_with_style(cell):
-    """Return cell value as HTML preserving bold/red font."""
+    """Return cell value as HTML preserving bold/red font, including rich text."""
     v = cell.value
     if v is None:
         return ""
-    # Replace Excel line breaks only in short text (like names)
+    
+    # Check if cell has rich text (partial formatting)
+    if hasattr(cell, 'font') and hasattr(cell, '_value') and hasattr(cell._value, '__iter__'):
+        try:
+            # Try to access rich text runs
+            rich_text = cell._value
+            if hasattr(rich_text, '__iter__') and not isinstance(rich_text, str):
+                html_parts = []
+                for run in rich_text:
+                    if hasattr(run, 'text') and hasattr(run, 'font'):
+                        text = html_escape(str(run.text))
+                        # Check for bold
+                        if getattr(run.font, 'bold', False):
+                            text = f"<strong>{text}</strong>"
+                        # Check for red color
+                        color = getattr(run.font, 'color', None)
+                        if color and getattr(color, 'rgb', None):
+                            rgb = color.rgb.upper()
+                            if rgb.endswith("FF0000") or rgb[-6:] == "FF0000":
+                                text = f'<span class="red-text">{text}</span>'
+                        html_parts.append(text)
+                    elif isinstance(run, str):
+                        html_parts.append(html_escape(run))
+                if html_parts:
+                    result = ''.join(html_parts)
+                    # Handle line breaks
+                    if "\n" in str(v) and len(str(v).split("\n")) <= 3 and len(str(v)) < 30:
+                        result = result.replace("\n", " ")
+                    else:
+                        result = result.replace("\n", "<br>")
+                    return result
+        except:
+            pass  # Fall back to regular processing
+    
+    # Regular processing (no rich text)
     raw = str(v)
     if "\n" in raw and len(raw.split("\n")) <= 3 and len(raw) < 30:
         text = html_escape(raw.replace("\n", " "))  # join with space
     else:
         text = html_escape(raw).replace("\n", "<br>")
 
-    # Bold & red detection
+    # Bold & red detection for entire cell
     is_bold = getattr(cell.font, "bold", False)
     color = getattr(cell.font, "color", None)
     is_red = False
