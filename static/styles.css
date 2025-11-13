@@ -66,7 +66,7 @@ h1 { margin: 0 0 6px; }
 table.grid { 
   width: 100%; 
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
 }
 table.grid td {
   padding: 8px 10px;
@@ -75,8 +75,16 @@ table.grid td {
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
-/* Content cell takes remaining space */
-table.grid td:not(:last-child) {
+/* Position column (first column) - fit content with constraints */
+table.grid td:first-child {
+  width: 1%;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+/* Action column (middle) takes remaining space */
+table.grid td:nth-child(2) {
   width: auto;
 }
 /* Checkbox column fixed width, always visible */
