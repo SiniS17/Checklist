@@ -110,9 +110,11 @@ table.grid td:last-child {
 .task-checkbox { transform: scale(1.2); cursor: pointer; }
 .red-text { color: #d00; }
 
-/* Floating hamburger menu (mobile only) */
+/* Floating hamburger menu (always visible) */
 #fab-menu {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -229,13 +231,6 @@ table.grid td:last-child {
   /* Hide desktop tabs on mobile */
   .tabs {
     display: none;
-  }
-
-  /* Show hamburger menu on mobile */
-  #fab-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   /* Keep sticky checkbox on mobile */
