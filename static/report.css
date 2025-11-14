@@ -1,40 +1,15 @@
-/* Navigation Bar */
-.top-nav {
-  background: var(--card);
-  border-bottom: 2px solid #e5e7eb;
-  padding: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, .05);
+/* Drawer Sections */
+.drawer-section {
+  margin-bottom: 24px;
 }
 
-.nav-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  gap: 4px;
-  padding: 12px 20px;
-}
-
-.nav-link {
-  padding: 10px 20px;
-  text-decoration: none;
-  color: var(--ink);
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-}
-
-.nav-link:hover {
-  background: #f3f4f6;
-}
-
-.nav-link.active {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
+.drawer-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
 /* Status Messages */
@@ -57,34 +32,6 @@
   background: #fee2e2;
   color: #991b1b;
   border: 1px solid #fca5a5;
-}
-
-/* Setup Panel */
-.setup-panel {
-  background: #eff6ff;
-  border: 2px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 24px;
-  margin: 20px 0;
-}
-
-.setup-panel h3 {
-  margin: 0 0 16px;
-  color: var(--ink);
-}
-
-.setup-instructions {
-  margin-bottom: 20px;
-  color: #374151;
-}
-
-.setup-instructions ol {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.setup-instructions li {
-  margin: 8px 0;
 }
 
 /* Form Styles */
@@ -180,23 +127,10 @@
   line-height: 1.5;
 }
 
-/* Sheet Info */
-.sheet-info {
-  background: #f9fafb;
-  padding: 16px;
-  border-radius: 8px;
-  margin-top: 24px;
-}
-
-.sheet-info h4 {
-  margin: 0 0 8px;
-  color: var(--ink);
-}
-
-.sheet-info p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
+/* Form Container */
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 /* Text muted */
@@ -205,11 +139,9 @@
   font-size: 14px;
 }
 
-/* Drawer modifications for sheets */
-#sheets-list .tab-btn {
-  width: 100%;
-  text-align: left;
-  margin-bottom: 8px;
+/* Back button spacing */
+#back-to-checklist {
+  margin-bottom: 20px;
 }
 
 /* Mobile adjustments */
