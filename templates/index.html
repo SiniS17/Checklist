@@ -5,8 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Checklist — {{ model.file_name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='report.css') }}">
   </head>
   <body>
+    <!-- Navigation Bar -->
+    <nav class="top-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-link active">📋 Checklist</a>
+        <a href="/report" class="nav-link">📝 Report</a>
+      </div>
+    </nav>
+
     <!-- Floating hamburger for mobile -->
     <button id="fab-menu" aria-label="Open sheets menu" title="Sheets">
       <span></span><span></span><span></span>
