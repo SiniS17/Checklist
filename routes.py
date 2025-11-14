@@ -8,12 +8,7 @@ def register_routes(app):
     
     @app.route("/")
     def index():
-        """Main checklist page"""
+        """Main checklist page with integrated report form"""
         service = ExcelService()
         model = service.parse_workbook(Config.EXCEL_PATH)
         return render_template("index.html", model=model)
-    
-    @app.route("/report")
-    def report_form():
-        """Report form page"""
-        return render_template("report.html")
