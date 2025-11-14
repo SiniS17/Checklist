@@ -8,79 +8,122 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='report.css') }}">
   </head>
   <body>
-    <!-- Navigation Bar -->
-    <nav class="top-nav">
-      <div class="nav-container">
-        <a href="/" class="nav-link active">📋 Checklist</a>
-        <a href="/report" class="nav-link">📝 Report</a>
-      </div>
-    </nav>
-
     <!-- Floating hamburger for mobile -->
-    <button id="fab-menu" aria-label="Open sheets menu" title="Sheets">
+    <button id="fab-menu" aria-label="Open menu" title="Menu">
       <span></span><span></span><span></span>
     </button>
     <div id="side-overlay"></div>
-    <nav id="side-drawer" aria-label="Sheets">
-      <div class="drawer-title">Sheets</div>
+    <nav id="side-drawer" aria-label="Navigation">
+      <div class="drawer-title">Menu</div>
       <div class="drawer-tabs">
-        {% for s in model.sheets %}
-          <button class="tab-btn{% if loop.first %} active{% endif %}"
-                  data-tab="tab-{{ loop.index0 }}"
-                  aria-selected="{{ 'true' if loop.first else 'false' }}">
-            {{ s.name }}
+        <!-- Checklist Sheets Section -->
+        <div class="drawer-section">
+          <div class="drawer-section-title">Checklist Sheets</div>
+          {% for s in model.sheets %}
+            <button class="tab-btn{% if loop.first %} active{% endif %}"
+                    data-tab="tab-{{ loop.index0 }}"
+                    data-type="checklist"
+                    aria-selected="{{ 'true' if loop.first else 'false' }}">
+              {{ s.name }}
+            </button>
+          {% endfor %}
+        </div>
+
+        <!-- Report Form Section -->
+        <div class="drawer-section">
+          <div class="drawer-section-title">Report Form</div>
+          <button class="tab-btn" data-type="report" id="report-btn">
+            📝 Submit Report
           </button>
-        {% endfor %}
+        </div>
       </div>
     </nav>
 
     <div class="container">
-      <h1>Checklist</h1>
-      <button id="reset-btn" class="reset-btn">Reset All</button>
-      <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
+      <!-- Checklist View -->
+      <div id="checklist-view">
+        <h1>Checklist</h1>
+        <button id="reset-btn" class="reset-btn">Reset All</button>
+        <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
 
-      <!-- Tabs (Desktop) -->
-      <div class="tabs">
+        <!-- Tabs (Desktop) -->
+        <div class="tabs">
+          {% for s in model.sheets %}
+            <button class="tab-btn{% if loop.first %} active{% endif %}" data-tab="tab-{{ loop.index0 }}">{{ s.name }}</button>
+          {% endfor %}
+        </div>
+
+        <!-- Sheet Panels -->
         {% for s in model.sheets %}
-          <button class="tab-btn{% if loop.first %} active{% endif %}" data-tab="tab-{{ loop.index0 }}">{{ s.name }}</button>
+          <section id="tab-{{ loop.index0 }}" class="tab-panel{% if loop.first %} active{% endif %}">
+            {% set sheet_index = loop.index0 %}
+            <div class="table-wrap">
+              <table class="grid">
+                <tbody>
+                {% for row in s.rows %}
+                  {% if row.type == 'warning' %}
+                    <tr class="warning-row">
+                      <td class="warning-cell" colspan="{{ s.max_cols + 1 }}">
+                        ⚠️ {{ row.html | safe }}
+                      </td>
+                    </tr>
+                  {% else %}
+                  <tr>
+                    {% for cell in row.cells %}
+                      <td>{{ cell.html | safe }}</td>
+                    {% endfor %}
+                    <td>
+                      <input type="checkbox" class="task-checkbox"
+                             data-sheet="{{ sheet_index }}"
+                             data-key="{{ loop.index0 }}">
+                    </td>
+                  </tr>
+
+                  {% endif %}
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
         {% endfor %}
       </div>
 
-      <!-- Sheet Panels -->
-      {% for s in model.sheets %}
-        <section id="tab-{{ loop.index0 }}" class="tab-panel{% if loop.first %} active{% endif %}">
-          {% set sheet_index = loop.index0 %}
-          <div class="table-wrap">
-            <table class="grid">
-              <tbody>
-              {% for row in s.rows %}
-                {% if row.type == 'warning' %}
-                  <tr class="warning-row">
-                    <td class="warning-cell" colspan="{{ s.max_cols + 1 }}">
-                      ⚠️ {{ row.html | safe }}
-                    </td>
-                  </tr>
-                {% else %}
-                <tr>
-                  {% for cell in row.cells %}
-                    <td>{{ cell.html | safe }}</td>
-                  {% endfor %}
-                  <td>
-                    <input type="checkbox" class="task-checkbox"
-                           data-sheet="{{ sheet_index }}"
-                           data-key="{{ loop.index0 }}">
-                  </td>
-                </tr>
+      <!-- Report Form View -->
+      <div id="report-view" style="display: none;">
+        <h1>Report Form</h1>
+        <button id="back-to-checklist" class="btn btn-secondary">← Back to Checklist</button>
 
-                {% endif %}
-              {% endfor %}
-              </tbody>
-            </table>
+        <!-- Status Messages -->
+        <div id="status-message" style="display: none;"></div>
+
+        <div class="form-container">
+          <div class="form-group">
+            <label for="report-id">ID *</label>
+            <input type="text" id="report-id" class="form-input" placeholder="Enter ID" />
           </div>
-        </section>
-      {% endfor %}
+
+          <div class="form-group">
+            <label for="report-ac">A/C Registration *</label>
+            <input type="text" id="report-ac" class="form-input" placeholder="Enter A/C Registration" />
+          </div>
+
+          <div class="form-group">
+            <label for="report-date">Date</label>
+            <input type="date" id="report-date" class="form-input" />
+          </div>
+
+          <button id="submit-report-btn" class="btn btn-primary">
+            <span>📤</span> Submit Report
+          </button>
+        </div>
+      </div>
     </div>
 
+    <script>
+      // Pre-configured Google Apps Script URL
+      window.REPORT_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+    </script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="{{ url_for('static', filename='report.js') }}"></script>
   </body>
 </html>
