@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='report.css') }}">
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="top-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-link">📋 Checklist</a>
+        <a href="/report" class="nav-link active">📝 Report</a>
+      </div>
+    </nav>
+
+    <!-- Floating hamburger for mobile (sheets menu) -->
+    <button id="fab-menu" aria-label="Open sheets menu" title="Sheets" style="display: none;">
+      <span></span><span></span><span></span>
+    </button>
+    <div id="side-overlay"></div>
+    <nav id="side-drawer" aria-label="Sheets">
+      <div class="drawer-title">Sheets</div>
+      <div id="sheets-list" class="drawer-tabs">
+        <p class="text-muted">Loading sheets...</p>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>Report Form</h1>
+      <p class="muted" id="active-sheet-name">Configure your connection first</p>
+
+      <!-- Status Messages -->
+      <div id="status-message" style="display: none;"></div>
+
+      <!-- Setup Panel -->
+      <div id="setup-panel" class="setup-panel">
+        <h3>⚙️ Setup Instructions</h3>
+        
+        <div class="setup-instructions">
+          <ol>
+            <li>Create a Google Apps Script in your Google Sheet</li>
+            <li>Copy the code from the "Setup Guide" section below</li>
+            <li>Deploy as Web App (Execute as: Me, Access: Anyone)</li>
+            <li>Copy the Web App URL and paste it below</li>
+          </ol>
+        </div>
+
+        <div class="form-group">
+          <label for="script-url">Google Apps Script Web App URL *</label>
+          <input
+            type="text"
+            id="script-url"
+            placeholder="https://script.google.com/macros/s/..."
+            class="form-input"
+          />
+        </div>
+
+        <button id="save-config-btn" class="btn btn-primary">Save & Connect</button>
+
+        <details class="code-section">
+          <summary>📋 Google Apps Script Code (Click to expand)</summary>
+          <pre class="code-block">function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = ss.getSheets();
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      success: true,
+      sheets: sheets.map(s => ({
+        name: s.getName(),
+        rowCount: s.getLastRow()
+      }))
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(data.sheetName);
+    
+    if (!sheet) {
+      sheet = ss.getSheets()[0];
+    }
+    
+    // Add headers if sheet is empty
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['Timestamp', 'ID', 'A/C Registration', 'Date']);
+    }
+    
+    // Add the data
+    sheet.appendRow([
+      new Date(),
+      data.data.id,
+      data.data.acRegis,
+      data.data.date
+    ]);
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Report added successfully'
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+        </details>
+      </div>
+
+      <!-- Report Form -->
+      <div id="report-form" style="display: none;">
+        <div class="form-group">
+          <label for="report-id">ID *</label>
+          <input type="text" id="report-id" class="form-input" placeholder="Enter ID" />
+        </div>
+
+        <div class="form-group">
+          <label for="report-ac">A/C Registration *</label>
+          <input type="text" id="report-ac" class="form-input" placeholder="Enter A/C Registration" />
+        </div>
+
+        <div class="form-group">
+          <label for="report-date">Date</label>
+          <input type="date" id="report-date" class="form-input" />
+        </div>
+
+        <button id="submit-report-btn" class="btn btn-primary">
+          <span>📤</span> Submit Report
+        </button>
+
+        <button id="back-to-setup-btn" class="btn btn-secondary">⚙️ Configuration</button>
+
+        <!-- Current Sheet Info -->
+        <div id="sheet-info" class="sheet-info">
+          <h4>Current Sheet Info</h4>
+          <p id="sheet-info-details">No sheet selected</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='report.js') }}"></script>
+  </body>
+</html>
