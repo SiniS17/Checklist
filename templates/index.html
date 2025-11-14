@@ -119,10 +119,7 @@
       </div>
     </div>
 
-    <script>
-      // Pre-configured Google Apps Script URL
-      window.REPORT_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
-    </script>
+    <script src="{{ url_for('static', filename='report-config.js') }}"></script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
     <script src="{{ url_for('static', filename='report.js') }}"></script>
   </body>
