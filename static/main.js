@@ -52,11 +52,11 @@
     const stateKey = "ckl__" + si;
     const stored = JSON.parse(localStorage.getItem(stateKey) || "{}");
 
-    // Restore checked boxes & strikethrough (skip header row)
+    // Restore checked boxes & strikethrough
     boxes.forEach((b, i) => {
       b.checked = !!stored[i];
       const r = b.closest("tr");
-      if (b.checked && r && !r.classList.contains("header-row")) {
+      if (b.checked && r) {
         r.classList.add("strike");
       }
     });
@@ -69,8 +69,13 @@
 
     function applyRules() {
       boxes.forEach((b, i) => {
-        if (i === 0) b.disabled = false;
-        else b.disabled = !boxes[i - 1].checked;
+        if (i === 0) {
+          // First real task (not header) is always enabled
+          b.disabled = false;
+        } else {
+          // All subsequent tasks require previous to be checked
+          b.disabled = !boxes[i - 1].checked;
+        }
       });
     }
 
@@ -78,9 +83,8 @@
     boxes.forEach((b, i) => {
       b.addEventListener("change", () => {
         const row = b.closest("tr");
-        const isHeaderRow = row && row.querySelectorAll("th, strong").length > 0 && i === 0;
 
-        if (b.checked && row && !isHeaderRow) {
+        if (b.checked && row) {
           row.classList.add("strike");
         } else if (row) {
           row.classList.remove("strike");
