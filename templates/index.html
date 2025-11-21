@@ -68,12 +68,14 @@
                       </td>
                     </tr>
                   {% else %}
-                  <tr {% if loop.first %}class="header-row"{% endif %}>
+                  {% set is_header = (row.cells|length >= 2 and 
+                                      ('Position' in row.cells[0].html or 'Action' in row.cells[1].html)) %}
+                  <tr {% if is_header %}class="header-row"{% endif %}>
                     {% for cell in row.cells %}
                       <td>{{ cell.html | safe }}</td>
                     {% endfor %}
                     <td>
-                      {% if not loop.first %}
+                      {% if not is_header %}
                       <input type="checkbox" class="task-checkbox"
                              data-sheet="{{ sheet_index }}"
                              data-key="{{ loop.index0 }}">
