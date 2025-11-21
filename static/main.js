@@ -1,5 +1,7 @@
 (function () {
   // === TAB SWITCHING ===
+  let lastActiveTab = null;
+
   function activateTab(btn) {
     document.querySelectorAll(".tab-btn").forEach(b => {
       b.classList.remove("active");
@@ -10,6 +12,11 @@
     btn.setAttribute("aria-selected", "true");
     const panel = document.getElementById(btn.dataset.tab);
     if (panel) panel.classList.add("active");
+
+    // Remember this as the last active checklist tab
+    if (btn.dataset.type === "checklist" || !btn.dataset.type) {
+      lastActiveTab = btn;
+    }
   }
 
   document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -18,6 +25,12 @@
       closeDrawer();
     });
   });
+
+  // Store the first tab as default last active
+  const firstTab = document.querySelector(".tab-btn[data-type='checklist']");
+  if (firstTab) {
+    lastActiveTab = firstTab;
+  }
 
   // === MOBILE DRAWER ===
   const fab = document.getElementById("fab-menu");

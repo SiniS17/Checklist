@@ -6,6 +6,76 @@
     <title>Checklist — {{ model.file_name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='report.css') }}">
+    <style>
+      /* Report Modal Styles */
+      .report-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+      }
+
+      .report-modal-content {
+        background: white;
+        border-radius: 16px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 24px;
+      }
+
+      .report-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .report-modal-header h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .close-modal-btn {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+
+      .close-modal-btn:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
+
+      @media (max-width: 768px) {
+        .report-modal-content {
+          padding: 20px;
+        }
+
+        .report-modal-header h2 {
+          font-size: 20px;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- Floating hamburger for mobile -->
@@ -22,7 +92,6 @@
           {% for s in model.sheets %}
             <button class="tab-btn{% if loop.first %} active{% endif %}"
                     data-tab="tab-{{ loop.index0 }}"
-                    data-type="checklist"
                     aria-selected="{{ 'true' if loop.first else 'false' }}">
               {{ s.name }}
             </button>
@@ -31,8 +100,8 @@
 
         <!-- Report Form Section -->
         <div class="drawer-section">
-          <div class="drawer-section-title">Report Form</div>
-          <button class="tab-btn" data-type="report" id="report-btn">
+          <div class="drawer-section-title">Actions</div>
+          <button class="tab-btn" id="mobile-report-btn">
             📝 Submit Report
           </button>
         </div>
@@ -42,8 +111,13 @@
     <div class="container">
       <!-- Checklist View -->
       <div id="checklist-view">
-        <h1>Checklist</h1>
-        <button id="reset-btn" class="reset-btn">Reset All</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h1 style="margin: 0;">Checklist</h1>
+          <div>
+            <button id="report-btn" class="btn btn-primary" style="margin-right: 12px;">📝 Submit Report</button>
+            <button id="reset-btn" class="reset-btn">Reset All</button>
+          </div>
+        </div>
         <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
 
         <!-- Tabs (Desktop) -->
@@ -68,7 +142,7 @@
                       </td>
                     </tr>
                   {% else %}
-                  {% set is_header = (row.cells|length >= 2 and 
+                  {% set is_header = (row.cells|length >= 2 and
                                       ('Position' in row.cells[0].html or 'Action' in row.cells[1].html)) %}
                   <tr {% if is_header %}class="header-row"{% endif %}>
                     {% for cell in row.cells %}
@@ -92,33 +166,37 @@
         {% endfor %}
       </div>
 
-      <!-- Report Form View -->
-      <div id="report-view" style="display: none;">
-        <h1>Report Form</h1>
-        <button id="back-to-checklist" class="btn btn-secondary">← Back to Checklist</button>
-
-        <!-- Status Messages -->
-        <div id="status-message" style="display: none;"></div>
-
-        <div class="form-container">
-          <div class="form-group">
-            <label for="report-id">ID *</label>
-            <input type="text" id="report-id" class="form-input" placeholder="Enter ID" />
+      <!-- Report Form View (Modal Overlay) -->
+      <div id="report-view" class="report-modal" style="display: none;">
+        <div class="report-modal-content">
+          <div class="report-modal-header">
+            <h2>Submit Report</h2>
+            <button id="close-report-btn" class="close-modal-btn">✕</button>
           </div>
 
-          <div class="form-group">
-            <label for="report-ac">A/C Registration *</label>
-            <input type="text" id="report-ac" class="form-input" placeholder="Enter A/C Registration" />
-          </div>
+          <!-- Status Messages -->
+          <div id="status-message" style="display: none;"></div>
 
-          <div class="form-group">
-            <label for="report-date">Date</label>
-            <input type="date" id="report-date" class="form-input" />
-          </div>
+          <div class="form-container">
+            <div class="form-group">
+              <label for="report-id">ID *</label>
+              <input type="text" id="report-id" class="form-input" placeholder="Enter ID" />
+            </div>
 
-          <button id="submit-report-btn" class="btn btn-primary">
-            <span>📤</span> Submit Report
-          </button>
+            <div class="form-group">
+              <label for="report-ac">A/C Registration *</label>
+              <input type="text" id="report-ac" class="form-input" placeholder="Enter A/C Registration" />
+            </div>
+
+            <div class="form-group">
+              <label for="report-date">Date</label>
+              <input type="date" id="report-date" class="form-input" />
+            </div>
+
+            <button id="submit-report-btn" class="btn btn-primary">
+              <span>📤</span> Submit Report
+            </button>
+          </div>
         </div>
       </div>
     </div>

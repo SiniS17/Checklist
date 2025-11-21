@@ -3,10 +3,10 @@
   const scriptUrl = window.REPORT_SCRIPT_URL;
 
   // DOM Elements
-  const checklistView = document.getElementById('checklist-view');
   const reportView = document.getElementById('report-view');
   const reportBtn = document.getElementById('report-btn');
-  const backToChecklistBtn = document.getElementById('back-to-checklist');
+  const mobileReportBtn = document.getElementById('mobile-report-btn');
+  const closeReportBtn = document.getElementById('close-report-btn');
   const submitReportBtn = document.getElementById('submit-report-btn');
   const statusMessage = document.getElementById('status-message');
   const reportIdInput = document.getElementById('report-id');
@@ -21,16 +21,17 @@
   }
 
   // === NAVIGATION ===
-  function showReportForm() {
-    if (checklistView) checklistView.style.display = 'none';
-    if (reportView) reportView.style.display = 'block';
+  function showReportModal() {
+    if (reportView) {
+      reportView.style.display = 'flex';
+      // Clear previous status
+      hideStatus();
+    }
     closeDrawer();
   }
 
-  function showChecklist() {
+  function closeReportModal() {
     if (reportView) reportView.style.display = 'none';
-    if (checklistView) checklistView.style.display = 'block';
-    closeDrawer();
   }
 
   function closeDrawer() {
@@ -44,7 +45,7 @@
     statusMessage.className = type;
     statusMessage.textContent = message;
     statusMessage.style.display = 'flex';
-    
+
     if (type === 'success') {
       setTimeout(() => {
         statusMessage.style.display = 'none';
@@ -58,12 +59,32 @@
 
   // === EVENT LISTENERS ===
   if (reportBtn) {
-    reportBtn.addEventListener('click', showReportForm);
+    reportBtn.addEventListener('click', showReportModal);
   }
 
-  if (backToChecklistBtn) {
-    backToChecklistBtn.addEventListener('click', showChecklist);
+  if (mobileReportBtn) {
+    mobileReportBtn.addEventListener('click', showReportModal);
   }
+
+  if (closeReportBtn) {
+    closeReportBtn.addEventListener('click', closeReportModal);
+  }
+
+  // Close modal when clicking outside
+  if (reportView) {
+    reportView.addEventListener('click', (e) => {
+      if (e.target === reportView) {
+        closeReportModal();
+      }
+    });
+  }
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && reportView && reportView.style.display === 'flex') {
+      closeReportModal();
+    }
+  });
 
   // === SUBMIT REPORT ===
   if (submitReportBtn) {
@@ -106,7 +127,7 @@
 
         // Assume success (no-cors mode doesn't allow response reading)
         showStatus('success', '✓ Report submitted successfully!');
-        
+
         // Clear form
         reportIdInput.value = '';
         reportAcInput.value = '';
