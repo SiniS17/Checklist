@@ -62,23 +62,6 @@
   Object.keys(bySheet).forEach(k => {
     const si = parseInt(k, 10);
     const boxes = bySheet[si];
-    const stateKey = "ckl__" + si;
-    const stored = JSON.parse(localStorage.getItem(stateKey) || "{}");
-
-    // Restore checked boxes & strikethrough
-    boxes.forEach((b, i) => {
-      b.checked = !!stored[i];
-      const r = b.closest("tr");
-      if (b.checked && r) {
-        r.classList.add("strike");
-      }
-    });
-
-    function updateState() {
-      const st = {};
-      boxes.forEach((b, i) => (st[i] = b.checked));
-      localStorage.setItem(stateKey, JSON.stringify(st));
-    }
 
     function applyRules() {
       boxes.forEach((b, i) => {
@@ -109,7 +92,6 @@
           }
         }
 
-        updateState();
         applyRules();
       });
     });
@@ -118,15 +100,33 @@
   });
 
   // === RESET BUTTON ===
-  const reset = document.getElementById("reset-btn");
-  if (reset) {
-    reset.addEventListener("click", () => {
+  const mobileResetBtn = document.getElementById("mobile-reset-btn");
+  if (mobileResetBtn) {
+    mobileResetBtn.addEventListener("click", () => {
       if (confirm("Clear all checkboxes and progress?")) {
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith("ckl__")) localStorage.removeItem(key);
+        // Uncheck all checkboxes and remove strikethrough
+        document.querySelectorAll(".task-checkbox").forEach(checkbox => {
+          checkbox.checked = false;
+          checkbox.disabled = false;
+          const row = checkbox.closest("tr");
+          if (row) {
+            row.classList.remove("strike");
+          }
         });
-        location.reload();
+
+        // Reapply rules for each sheet
+        Object.keys(bySheet).forEach(k => {
+          const boxes = bySheet[k];
+          boxes.forEach((b, i) => {
+            if (i === 0) {
+              b.disabled = false;
+            } else {
+              b.disabled = !boxes[i - 1].checked;
+            }
+          });
+        });
       }
+      closeDrawer();
     });
   }
 })();

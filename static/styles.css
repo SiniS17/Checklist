@@ -196,21 +196,6 @@ table.grid td:last-child {
   color: #888;
 }
 
-.reset-btn {
-  float: right;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.reset-btn:hover {
-  background: #dc2626;
-}
-
 /* Mobile optimizations */
 @media (max-width: 768px) {
   body {
@@ -273,14 +258,6 @@ table.grid td:last-child {
   table.grid td {
     padding: 10px 6px;
     font-size: 14px;
-  }
-
-  .reset-btn {
-    float: none;
-    display: block;
-    width: 100%;
-    margin-top: 12px;
-    padding: 10px;
   }
 
   .muted {

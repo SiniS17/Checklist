@@ -92,6 +92,7 @@
           {% for s in model.sheets %}
             <button class="tab-btn{% if loop.first %} active{% endif %}"
                     data-tab="tab-{{ loop.index0 }}"
+                    data-type="checklist"
                     aria-selected="{{ 'true' if loop.first else 'false' }}">
               {{ s.name }}
             </button>
@@ -104,6 +105,9 @@
           <button class="tab-btn" id="mobile-report-btn">
             📝 Submit Report
           </button>
+          <button class="tab-btn" id="mobile-reset-btn">
+            🔄 Reset All
+          </button>
         </div>
       </div>
     </nav>
@@ -111,19 +115,13 @@
     <div class="container">
       <!-- Checklist View -->
       <div id="checklist-view">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h1 style="margin: 0;">Checklist</h1>
-          <div>
-            <button id="report-btn" class="btn btn-primary" style="margin-right: 12px;">📝 Submit Report</button>
-            <button id="reset-btn" class="reset-btn">Reset All</button>
-          </div>
-        </div>
+        <h1>Checklist</h1>
         <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
 
         <!-- Tabs (Desktop) -->
         <div class="tabs">
           {% for s in model.sheets %}
-            <button class="tab-btn{% if loop.first %} active{% endif %}" data-tab="tab-{{ loop.index0 }}">{{ s.name }}</button>
+            <button class="tab-btn{% if loop.first %} active{% endif %}" data-tab="tab-{{ loop.index0 }}" data-type="checklist">{{ s.name }}</button>
           {% endfor %}
         </div>
 
