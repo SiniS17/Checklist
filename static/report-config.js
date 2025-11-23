@@ -42,15 +42,16 @@ function doPost(e) {
 
     // Add headers if sheet is empty
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Time update', 'VAECO ID', 'A/C', 'Active Tab Progress']);
+      sheet.appendRow(['Time update', 'VAECO ID', 'A/C', 'Active Tab', 'Progress']);
     }
 
-    // Add the data
+    // Add the data with separate columns for active tab and progress
     sheet.appendRow([
       new Date(data.data.submitTime),
       data.data.id,
       data.data.acRegis,
-      data.data.progressCount
+      data.data.activeTab,
+      data.data.progressCompleted + '/' + data.data.progressTotal
     ]);
 
     return ContentService

@@ -67,6 +67,25 @@ table.grid td {
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
+
+/* Clickable rows with checkboxes */
+table.grid tr:has(.task-checkbox) {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+table.grid tr:has(.task-checkbox):hover {
+  background-color: #f9fafb;
+}
+
+table.grid tr:has(.task-checkbox:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+table.grid tr:has(.task-checkbox:disabled):hover {
+  background-color: transparent;
+}
 /* Position column (first column) - fit content with constraints */
 table.grid td:first-child {
   width: 1%;
@@ -197,6 +216,7 @@ table.grid td:last-child {
     padding: 16px 12px;
     margin: 12px auto;
     max-width: 100%;
+    margin-top: 70px; /* Add space for report button */
   }
 
   h1 {

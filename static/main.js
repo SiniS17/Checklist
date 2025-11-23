@@ -21,6 +21,10 @@
 
   document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => {
+      // Don't activate tab for reset button
+      if (btn.id === "mobile-reset-btn") {
+        return;
+      }
       activateTab(btn);
       closeDrawer();
     });
@@ -57,6 +61,28 @@
     const si = parseInt(box.dataset.sheet, 10);
     if (!bySheet[si]) bySheet[si] = [];
     bySheet[si].push(box);
+  });
+
+  // Make entire row clickable
+  document.querySelectorAll("tr").forEach(row => {
+    const checkbox = row.querySelector(".task-checkbox");
+    if (checkbox) {
+      row.style.cursor = "pointer";
+
+      row.addEventListener("click", (e) => {
+        // Don't trigger if clicking directly on checkbox (let it handle itself)
+        if (e.target === checkbox) return;
+
+        // Don't trigger if checkbox is disabled
+        if (checkbox.disabled) return;
+
+        // Toggle checkbox
+        checkbox.checked = !checkbox.checked;
+
+        // Trigger change event
+        checkbox.dispatchEvent(new Event("change"));
+      });
+    }
   });
 
   Object.keys(bySheet).forEach(k => {
@@ -102,29 +128,45 @@
   // === RESET BUTTON ===
   const mobileResetBtn = document.getElementById("mobile-reset-btn");
   if (mobileResetBtn) {
-    mobileResetBtn.addEventListener("click", () => {
-      if (confirm("Clear all checkboxes and progress?")) {
-        // Uncheck all checkboxes and remove strikethrough
-        document.querySelectorAll(".task-checkbox").forEach(checkbox => {
-          checkbox.checked = false;
-          checkbox.disabled = false;
-          const row = checkbox.closest("tr");
-          if (row) {
-            row.classList.remove("strike");
-          }
-        });
+    mobileResetBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-        // Reapply rules for each sheet
-        Object.keys(bySheet).forEach(k => {
-          const boxes = bySheet[k];
-          boxes.forEach((b, i) => {
-            if (i === 0) {
-              b.disabled = false;
-            } else {
-              b.disabled = !boxes[i - 1].checked;
+      // Get the active tab index
+      const activeBtn = document.querySelector('.tab-btn.active[data-type="checklist"]');
+      if (!activeBtn) {
+        closeDrawer();
+        return;
+      }
+
+      const tabId = activeBtn.getAttribute('data-tab');
+      const sheetIndex = parseInt(tabId.replace('tab-', ''), 10);
+
+      if (confirm("Clear all checkboxes in the active tab?")) {
+        // Only reset checkboxes in the active tab
+        const activePanel = document.getElementById(tabId);
+        if (activePanel) {
+          const checkboxes = activePanel.querySelectorAll(".task-checkbox");
+          checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            const row = checkbox.closest("tr");
+            if (row) {
+              row.classList.remove("strike");
             }
           });
-        });
+
+          // Reapply rules for this sheet only
+          if (bySheet[sheetIndex]) {
+            const boxes = bySheet[sheetIndex];
+            boxes.forEach((b, i) => {
+              if (i === 0) {
+                b.disabled = false;
+              } else {
+                b.disabled = !boxes[i - 1].checked;
+              }
+            });
+          }
+        }
       }
       closeDrawer();
     });

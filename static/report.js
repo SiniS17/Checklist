@@ -103,10 +103,11 @@
       });
     }
 
-    // Update active tab name
+    // Update active tab name and progress
+    const activeTabName = getActiveTabName();
     const activeTabElement = document.getElementById('display-active-tab');
     if (activeTabElement) {
-      activeTabElement.textContent = getActiveTabName();
+      activeTabElement.textContent = activeTabName + ':';
     }
 
     // Calculate progress for active tab only
@@ -255,7 +256,8 @@
               id: userData.id,
               acRegis: userData.acRegis,
               activeTab: activeTab,
-              progressCount: progress.completed + '/' + progress.total,
+              progressCompleted: progress.completed,
+              progressTotal: progress.total,
               startTime: userData.startTime.toISOString(),
               submitTime: currentTime.toISOString()
             }

@@ -38,25 +38,27 @@
       /* Floating Report Button */
       #floating-report-btn {
         position: fixed;
-        bottom: 20px;
+        top: 20px;
         right: 20px;
         padding: 12px 24px;
-        border-radius: 12px;
-        background: var(--accent);
+        border-radius: 8px;
+        background: #fbbf24;
         border: none;
-        color: white;
-        font-size: 16px;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        color: #78350f;
+        font-size: 15px;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
         cursor: pointer;
         transition: all 0.2s ease;
         z-index: 1000;
         display: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       #floating-report-btn:hover {
-        background: #1d4ed8;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+        background: #f59e0b;
+        box-shadow: 0 6px 16px rgba(251, 191, 36, 0.5);
       }
 
       #floating-report-btn:active {
@@ -186,6 +188,18 @@
         color: var(--accent);
       }
 
+      /* Action button styling */
+      .action-btn {
+        background: var(--accent);
+        color: white;
+        border: 1px solid var(--accent);
+      }
+
+      .action-btn:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+      }
+
       @media (max-width: 768px) {
         .report-modal-content {
           padding: 20px;
@@ -248,30 +262,22 @@
         <!-- Actions Section -->
         <div class="drawer-section">
           <div class="drawer-section-title">Actions</div>
-          <button class="tab-btn" id="mobile-reset-btn">
-            🔄 Reset All
+          <button class="action-btn tab-btn" id="mobile-reset-btn">
+            🔄 Reset Active Tab
           </button>
         </div>
       </div>
     </nav>
 
     <!-- Floating Report Button -->
-    <button id="floating-report-btn" aria-label="Submit Report" title="Submit Report">
-      📊
+    <button id="floating-report-btn" aria-label="Submit Report" title="Submit Report" style="display: none;">
+      REPORT
     </button>
 
     <div class="container" id="main-container" style="display: none;">
       <!-- Checklist View -->
       <div id="checklist-view">
-        <h1>Checklist</h1>
-        <div class="muted">Source: <strong>{{ model.file_name }}</strong></div>
-
-        <!-- Tabs (Desktop) -->
-        <div class="tabs">
-          {% for s in model.sheets %}
-            <button class="tab-btn{% if loop.first %} active{% endif %}" data-tab="tab-{{ loop.index0 }}" data-type="checklist">{{ s.name }}</button>
-          {% endfor %}
-        </div>
+        <h1 id="active-tab-title">Loading...</h1>
 
         <!-- Sheet Panels -->
         {% for s in model.sheets %}
@@ -335,8 +341,8 @@
               <span class="report-info-value" id="display-datetime">-</span>
             </div>
             <div class="report-info-row">
-              <span class="report-info-label">Progress:</span>
-              <span class="report-info-value" id="display-progress">0%</span>
+              <span class="report-info-label" id="display-active-tab">Active Tab:</span>
+              <span class="report-info-value" id="display-progress">0/0</span>
             </div>
             <button class="edit-info-btn" id="edit-info-btn">✏️ Edit Details</button>
           </div>
@@ -369,5 +375,25 @@
     <script src="{{ url_for('static', filename='report-config.js') }}"></script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
     <script src="{{ url_for('static', filename='report.js') }}"></script>
+    <script>
+      // Update page title to show active tab name
+      function updateActiveTabTitle() {
+        const activeBtn = document.querySelector('.tab-btn.active[data-type="checklist"]');
+        const titleElement = document.getElementById('active-tab-title');
+        if (activeBtn && titleElement) {
+          titleElement.textContent = activeBtn.textContent.trim();
+        }
+      }
+
+      // Update on page load
+      document.addEventListener('DOMContentLoaded', updateActiveTabTitle);
+
+      // Update when tab changes
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setTimeout(updateActiveTabTitle, 50);
+        });
+      });
+    </script>
   </body>
 </html>
