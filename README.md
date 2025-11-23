@@ -1,149 +1,300 @@
-# Flask Checklist Web Application
+# ✈️ Aircraft Checklist Web Application
 
-A web-based checklist application that reads Excel files and converts them into interactive, mobile-responsive checklists with progress tracking.
+A modern, mobile-friendly checklist application for aircraft maintenance procedures with progress tracking and Google Sheets integration.
 
-## Features
+## 🌟 Features
 
-- 📊 **Excel Integration**: Automatically parses `.xlsx` files with support for merged cells and multi-sheet workbooks
-- ✅ **Interactive Checkboxes**: Sequential checkbox locking ensures tasks are completed in order
-- 💾 **Progress Persistence**: Saves checkbox states to localStorage for session recovery
-- 📱 **Mobile Responsive**: Optimized UI with sticky checkboxes and hamburger menu navigation
-- 🎨 **Rich Text Support**: Preserves bold and colored text formatting from Excel cells
-- ⚠️ **Warning Rows**: Special highlighting for warning/caution messages
-- 🔄 **Reset Functionality**: Clear all progress with one click
+- **Sequential Checklist System**: Checkboxes unlock progressively as tasks are completed
+- **Multiple Sheets**: Navigate between different checklist sections (Engine Start, Shutdown, etc.)
+- **Mobile-Optimized**: Responsive design with hamburger menu and touch-friendly interface
+- **Progress Tracking**: Real-time progress monitoring for active checklist
+- **Report Submission**: Automatic report generation to Google Sheets
+- **User Session**: Login system with ID and A/C Registration tracking
+- **Visual Feedback**: Strike-through completed tasks, hover effects, disabled state indicators
+- **Excel Import**: Parses Excel (.xlsx) files with merged cells and formatting support
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Python 3.7+
 - Flask
 - openpyxl
+- Google Account (for Google Sheets integration)
 
-## Installation
+## 🚀 Installation
 
-1. Clone or download this repository
+1. **Clone or download the project**
+   ```bash
+   cd your-project-folder
+   ```
 
-2. Install dependencies:
-```bash
-pip install flask openpyxl
+2. **Install dependencies**
+   ```bash
+   pip install flask openpyxl
+   ```
+
+3. **Add your Excel checklist file**
+   - Place your `Checklist.xlsx` file in the project root
+   - The Excel file should have sheets with structured data (Position, Action columns)
+
+4. **Configure Google Sheets (Optional)**
+   - Follow the setup instructions in `static/report-config.js`
+   - Deploy Google Apps Script and update the URL
+
+## 🏃 Running the Application
+
+1. **Start the Flask server**
+   ```bash
+   python app.py
+   ```
+
+2. **Open your browser**
+   ```
+   http://localhost:5000
+   ```
+
+3. **Login**
+   - Enter your ID and A/C Registration
+   - Start checking off tasks!
+
+## 📁 Project Structure
+
+```
+Checklist/
+├── app.py                      # Main Flask application
+├── config.py                   # Configuration settings
+├── routes.py                   # URL route definitions
+├── Checklist.xlsx              # Your Excel checklist file
+│
+├── formatters/
+│   ├── __init__.py
+│   └── cell_formatter.py       # Excel cell to HTML conversion
+│
+├── handlers/
+│   ├── __init__.py
+│   └── merge_handler.py        # Excel merged cell handling
+│
+├── services/
+│   ├── __init__.py
+│   └── excel_service.py        # Excel parsing service
+│
+├── utils/
+│   ├── __init__.py
+│   └── html_utils.py           # HTML utility functions
+│
+├── static/                     # Static assets
+│   ├── main.js                 # Main JavaScript (tabs, checkboxes, reset)
+│   ├── report.js               # Report modal functionality
+│   ├── report-config.js        # Google Apps Script configuration
+│   ├── styles.css              # Main stylesheet
+│   └── report.css              # Report modal styles
+│
+└── templates/                  # HTML templates
+    ├── index.html              # Main application page
+    └── report.html             # Standalone report page (unused)
 ```
 
-3. Place your Excel file named `Checklist.xlsx` in the project root directory
+## 🎨 Key Features Explained
 
-## Project Structure
+### 1. Sequential Checkbox System
+- First task is always enabled
+- Each task unlocks only when the previous task is checked
+- Unchecking a task automatically unchecks and disables all following tasks
 
+### 2. Active Tab Reset
+- Reset button clears only the current active tab
+- Preserves progress in other tabs
+- Confirmation dialog prevents accidental resets
+
+### 3. Report System
+- Tracks user ID, A/C Registration, timestamp
+- Shows active tab name and progress (e.g., "Trước khi nổ máy: 9/33")
+- Submits data to Google Sheets via Apps Script
+- Edit user details before submission
+
+### 4. Mobile Navigation
+- Hamburger menu (bottom-right) for tab navigation
+- Yellow "REPORT" button (top-right) for quick access
+- Slide-out drawer with all checklist sheets
+- Touch-optimized checkboxes and clickable rows
+
+## 🔧 Configuration
+
+### Changing the Excel File
+1. Replace `Checklist.xlsx` with your file
+2. Update `EXCEL_PATH` in `config.py` if using a different filename
+
+### Google Sheets Integration
+
+1. **Create Google Apps Script**
+   - Open your Google Sheet
+   - Go to Extensions → Apps Script
+   - Copy the code from `static/report-config.js` comments
+   - Save the script
+
+2. **Deploy as Web App**
+   - Click Deploy → New deployment
+   - Select type: Web app
+   - Execute as: Me
+   - Who has access: Anyone
+   - Click Deploy
+
+3. **Update Configuration**
+   - Copy the Web App URL
+   - Update `window.REPORT_SCRIPT_URL` in `static/report-config.js`
+
+### Google Apps Script Code
+```javascript
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(data.sheetName);
+    
+    if (!sheet) {
+      sheet = ss.getSheets()[0];
+    }
+    
+    // Add headers if sheet is empty
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['Time update', 'VAECO ID', 'A/C', 'Active Tab', 'Progress']);
+    }
+    
+    // Add the data
+    sheet.appendRow([
+      new Date(data.data.submitTime),
+      data.data.id,
+      data.data.acRegis,
+      data.data.activeTab,
+      data.data.progressCompleted + '/' + data.data.progressTotal
+    ]);
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Report added successfully'
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
 ```
-project-root/
-├── app.py                 # Main Flask application
-├── Checklist.xlsx         # Your Excel checklist file
-├── templates/
-│   └── index.html        # Main HTML template
-├── static/
-│   ├── styles.css        # Stylesheet
-│   └── main.js           # Client-side JavaScript
-├── README.md             # This file
-├── Structure.md          # Detailed architecture documentation
-└── Workflow.md           # Development workflow guide
-```
 
-## Quick Start
+## 🎯 Usage Guide
 
-1. **Run the application:**
-```bash
-python app.py
-```
+### For Users
 
-2. **Open your browser:**
-```
-http://127.0.0.1:5000
-```
+1. **Login**
+   - Enter your VAECO ID
+   - Enter the Aircraft Registration
+   - Click "Start Checklist"
 
-3. **Start checking off tasks!**
+2. **Working with Checklists**
+   - Click hamburger menu (⋮) to switch between sheets
+   - Tap anywhere on a task row to check it off
+   - Tasks unlock sequentially as you progress
+   - Completed tasks show with strike-through
 
-## Excel File Format
+3. **Submitting Reports**
+   - Click yellow "REPORT" button (top-right)
+   - Review your progress
+   - Edit details if needed
+   - Click "Submit Report"
 
-Your `Checklist.xlsx` should follow this structure:
+4. **Resetting Progress**
+   - Open hamburger menu
+   - Click "🔄 Reset Active Tab"
+   - Confirm to clear current tab's checkboxes
 
-| Position | Action | Note (optional) |
-|----------|--------|-----------------|
-| Task name | Instructions | Additional info |
+### For Administrators
 
-### Special Features:
-- **Multiple Sheets**: Each sheet becomes a separate tab
-- **Merged Cells**: Spanning 2+ columns creates warning banners
-- **Text Formatting**: Bold and red text are preserved
-- **Line Breaks**: Automatically converted to `<br>` tags
+1. **Updating Checklists**
+   - Edit `Checklist.xlsx`
+   - Restart the Flask server
+   - Changes appear immediately
 
-### Example:
-```
-Sheet 1: "Pre-flight Checklist"
-┌─────────────────┬──────────────────────────────────┬────────┐
-│ Position        │ Action                           │ Note   │
-├─────────────────┼──────────────────────────────────┼────────┤
-│ ⚠️ WARNING: Follow all safety procedures (merged) │        │
-├─────────────────┼──────────────────────────────────┼────────┤
-│ Headset Man     │ Check communications... PERFORM  │        │
-├─────────────────┼──────────────────────────────────┼────────┤
-│ Cockpit Man     │ BRAKE Pedals............APPLY    │        │
-└─────────────────┴──────────────────────────────────┴────────┘
-```
+2. **Viewing Reports**
+   - Open your Google Sheet
+   - Check the configured sheet/tab
+   - Data includes: Timestamp, ID, A/C, Active Tab, Progress
 
-## Usage
+## 🐛 Troubleshooting
 
-### Desktop
-- Click tabs at the top to switch between sheets
-- Check boxes sequentially (next checkbox unlocks when previous is checked)
-- Click "Reset All" to clear all progress
+### Excel File Not Loading
+- Ensure `Checklist.xlsx` is in the project root
+- Check file permissions
+- Verify Excel file format (must be .xlsx)
 
-### Mobile
-- Tap the floating blue button (☰) to open the sheet menu
-- Checkboxes stay sticky on the right side while scrolling
-- Swipe horizontally to view full content
+### Google Sheets Not Receiving Data
+- Verify Web App URL in `report-config.js`
+- Check Apps Script deployment settings
+- Ensure "Anyone" has access to the Web App
+- Test the Apps Script directly in the editor
 
-## Browser Compatibility
+### Checkboxes Not Working
+- Clear browser cache
+- Check browser console for JavaScript errors
+- Ensure all static files are loaded correctly
 
-- ✅ Chrome/Edge (recommended)
+### Mobile Display Issues
+- Check viewport meta tag in HTML
+- Verify responsive CSS is loaded
+- Test on different screen sizes
+
+## 📱 Browser Compatibility
+
+- ✅ Chrome/Edge (Recommended)
 - ✅ Firefox
-- ✅ Safari
-- ✅ Mobile browsers (iOS Safari, Chrome Android)
+- ✅ Safari (iOS & macOS)
+- ✅ Mobile browsers (Chrome, Safari)
 
-## Known Issues
+## 🔒 Security Notes
 
-- Rich text formatting detection needs improvement (partial bold text may not display correctly)
-- localStorage is per-browser (progress doesn't sync across devices)
+- **Google Apps Script**: Set "Execute as: Me" for proper permissions
+- **Web App Access**: Use "Anyone" for internal tools, or restrict as needed
+- **HTTPS**: Deploy with proper SSL in production
+- **User Data**: Consider adding authentication for production use
 
-## Troubleshooting
+## 📝 Excel File Format
 
-**Problem**: Checkboxes appear disabled
-- **Solution**: You must check the previous checkbox first (sequential order)
+Your Excel file should follow this structure:
 
-**Problem**: Progress lost after reload
-- **Solution**: localStorage may be disabled or cleared. Check browser settings.
+```
+Sheet 1: "Trước khi nổ máy"
+| Position    | Action                           | Note (optional) |
+|-------------|----------------------------------|-----------------|
+| Headset man | Check clean and clear FOD...     | Additional info |
+| Cockpit man | Cockpit Lighting... As required  |                 |
+```
 
-**Problem**: Excel formatting not showing
-- **Solution**: Ensure you're using `.xlsx` format (not `.xls`) and formatting is applied in Excel
+**Special Features:**
+- Merged cells for warnings/headers (will be displayed as warning rows)
+- Last column (Notes) is automatically hidden
+- Multiple sheets supported
 
-**Problem**: Mobile view not responsive
-- **Solution**: Clear browser cache and ensure viewport meta tag is present
+## 🤝 Contributing
 
-## Future Enhancements
+Feel free to submit issues or pull requests for improvements!
 
-- [ ] Fix rich text (partial bold) detection
-- [ ] Add backend database for multi-user progress tracking
-- [ ] Export progress to PDF/Excel
-- [ ] User authentication and profiles
-- [ ] Real-time collaboration features
-- [ ] Dark mode theme
+## 📄 License
 
-## Contributing
+This project is for internal use. Modify as needed for your organization.
 
-This is a work-in-progress project. Contributions welcome!
+## 👥 Credits
 
-## License
+Developed for aircraft maintenance checklist management.
 
-MIT License - Feel free to use and modify for your needs.
+## 📞 Support
 
-## Support
+For questions or issues, contact VAE04028.
 
-For issues or questions, please refer to:
-- `Structure.md` for architectural details
-- `Workflow.md` for development guidelines
+---
+
+**Version:** 1.4.0  
+**Last Updated:** November 2025
