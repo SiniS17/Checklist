@@ -557,5 +557,5 @@ Google Apps Script   # Report data storage
 
 ---
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.4.0  
 **Last Updated:** November 2025
