@@ -28,17 +28,7 @@ body {
 }
 
 h1 { margin: 0 0 6px; }
-.muted { color: var(--muted); }
-
-/* Desktop tabs */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 8px;
-  flex-wrap: wrap;
-}
+.muted { color: var(--muted); margin-bottom: 16px; }
 
 .tab-btn {
   background: transparent;

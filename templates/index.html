@@ -7,6 +7,62 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='report.css') }}">
     <style>
+      /* Login Screen */
+      #login-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: var(--bg);
+      }
+
+      .login-card {
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
+        max-width: 400px;
+        width: 100%;
+        margin: 20px;
+      }
+
+      .login-card h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      .login-card .muted {
+        margin-bottom: 24px;
+      }
+
+      /* Floating Report Button */
+      #floating-report-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        background: var(--accent);
+        border: none;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 1000;
+        display: none;
+      }
+
+      #floating-report-btn:hover {
+        background: #1d4ed8;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+      }
+
+      #floating-report-btn:active {
+        transform: translateY(1px);
+      }
+
       /* Report Modal Styles */
       .report-modal {
         position: fixed;
@@ -66,6 +122,70 @@
         color: #111827;
       }
 
+      .report-info {
+        background: #f3f4f6;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .report-info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .report-info-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .report-info-label {
+        font-weight: 600;
+        color: #6b7280;
+      }
+
+      .report-info-value {
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .edit-info-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: transparent;
+        border: 1px solid #d1d5db;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        color: #6b7280;
+        transition: all 0.2s ease;
+        margin-top: 12px;
+      }
+
+      .edit-info-btn:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+      }
+
+      .progress-circle {
+        width: 120px;
+        height: 120px;
+        margin: 20px auto;
+        position: relative;
+      }
+
+      .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+
       @media (max-width: 768px) {
         .report-modal-content {
           padding: 20px;
@@ -74,12 +194,38 @@
         .report-modal-header h2 {
           font-size: 20px;
         }
+
+        .login-card {
+          padding: 24px;
+        }
       }
     </style>
   </head>
   <body>
+    <!-- Login Screen -->
+    <div id="login-screen">
+      <div class="login-card">
+        <h1>✈️ Checklist</h1>
+        <p class="muted">Enter your details to begin</p>
+
+        <div class="form-group">
+          <label for="login-id">ID *</label>
+          <input type="text" id="login-id" class="form-input" placeholder="Enter your ID" autofocus />
+        </div>
+
+        <div class="form-group">
+          <label for="login-ac">A/C Registration *</label>
+          <input type="text" id="login-ac" class="form-input" placeholder="Enter A/C Registration" />
+        </div>
+
+        <button id="login-btn" class="btn btn-primary" style="width: 100%; margin: 0;">
+          Start Checklist →
+        </button>
+      </div>
+    </div>
+
     <!-- Floating hamburger for mobile -->
-    <button id="fab-menu" aria-label="Open menu" title="Menu">
+    <button id="fab-menu" aria-label="Open menu" title="Menu" style="display: none;">
       <span></span><span></span><span></span>
     </button>
     <div id="side-overlay"></div>
@@ -99,12 +245,9 @@
           {% endfor %}
         </div>
 
-        <!-- Report Form Section -->
+        <!-- Actions Section -->
         <div class="drawer-section">
           <div class="drawer-section-title">Actions</div>
-          <button class="tab-btn" id="mobile-report-btn">
-            📝 Submit Report
-          </button>
           <button class="tab-btn" id="mobile-reset-btn">
             🔄 Reset All
           </button>
@@ -112,7 +255,12 @@
       </div>
     </nav>
 
-    <div class="container">
+    <!-- Floating Report Button -->
+    <button id="floating-report-btn" aria-label="Submit Report" title="Submit Report">
+      📊
+    </button>
+
+    <div class="container" id="main-container" style="display: none;">
       <!-- Checklist View -->
       <div id="checklist-view">
         <h1>Checklist</h1>
@@ -168,33 +316,52 @@
       <div id="report-view" class="report-modal" style="display: none;">
         <div class="report-modal-content">
           <div class="report-modal-header">
-            <h2>Submit Report</h2>
+            <h2>📊 Submit Report</h2>
             <button id="close-report-btn" class="close-modal-btn">✕</button>
+          </div>
+
+          <!-- Report Info Display -->
+          <div class="report-info" id="report-info-display">
+            <div class="report-info-row">
+              <span class="report-info-label">ID:</span>
+              <span class="report-info-value" id="display-id">-</span>
+            </div>
+            <div class="report-info-row">
+              <span class="report-info-label">A/C Registration:</span>
+              <span class="report-info-value" id="display-ac">-</span>
+            </div>
+            <div class="report-info-row">
+              <span class="report-info-label">Date & Time:</span>
+              <span class="report-info-value" id="display-datetime">-</span>
+            </div>
+            <div class="report-info-row">
+              <span class="report-info-label">Progress:</span>
+              <span class="report-info-value" id="display-progress">0%</span>
+            </div>
+            <button class="edit-info-btn" id="edit-info-btn">✏️ Edit Details</button>
+          </div>
+
+          <!-- Edit Form (Hidden by default) -->
+          <div id="report-edit-form" style="display: none;">
+            <div class="form-group">
+              <label for="edit-id">ID *</label>
+              <input type="text" id="edit-id" class="form-input" placeholder="Enter ID" />
+            </div>
+
+            <div class="form-group">
+              <label for="edit-ac">A/C Registration *</label>
+              <input type="text" id="edit-ac" class="form-input" placeholder="Enter A/C Registration" />
+            </div>
+
+            <button id="save-edit-btn" class="btn btn-secondary">💾 Save Changes</button>
           </div>
 
           <!-- Status Messages -->
           <div id="status-message" style="display: none;"></div>
 
-          <div class="form-container">
-            <div class="form-group">
-              <label for="report-id">ID *</label>
-              <input type="text" id="report-id" class="form-input" placeholder="Enter ID" />
-            </div>
-
-            <div class="form-group">
-              <label for="report-ac">A/C Registration *</label>
-              <input type="text" id="report-ac" class="form-input" placeholder="Enter A/C Registration" />
-            </div>
-
-            <div class="form-group">
-              <label for="report-date">Date</label>
-              <input type="date" id="report-date" class="form-input" />
-            </div>
-
-            <button id="submit-report-btn" class="btn btn-primary">
-              <span>📤</span> Submit Report
-            </button>
-          </div>
+          <button id="submit-report-btn" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
+            <span>📤</span> Submit Report
+          </button>
         </div>
       </div>
     </div>
