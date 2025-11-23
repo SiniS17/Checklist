@@ -1,6 +1,6 @@
 // Google Apps Script Configuration
 // Replace the URL below with your actual Google Apps Script Web App URL
-window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySJ8H50i7HmNenDLXJzFdalaCI_0ivN33yCMaDqOjEs3vS0hRQw9WtPBkQiVo_LGe0/exec';
+window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6thygHTdwXUvnRemy1EbmxfDXdRj_j0W5uqdT8SC3gnHosv7DMRhrdXX7F_txTIZp/exec';
 
 // Instructions:
 // 1. Create a Google Apps Script in your Google Sheet (Extensions > Apps Script)
