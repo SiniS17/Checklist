@@ -3,7 +3,7 @@
 window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6thygHTdwXUvnRemy1EbmxfDXdRj_j0W5uqdT8SC3gnHosv7DMRhrdXX7F_txTIZp/exec';
 
 // Replace with your Google Sheet URL (the actual spreadsheet where data is stored)
-window.GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit';
+window.GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1vRhQHTMpd3eKHHJbcUl5BLyoUynUeMtlAW1gZ2jC-6E/edit';
 
 // Instructions:
 // 1. Create a Google Apps Script in your Google Sheet (Extensions > Apps Script)
