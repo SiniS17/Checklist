@@ -1,6 +1,6 @@
 // Google Apps Script Configuration
 // Replace the URL below with your actual Google Apps Script Web App URL
-window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAUqVoRRl1CI_WwHz70l9Ry6lyqQlsM_8qX1EJaoy11UbA7EQ-sCCO5cKFDyzUFVgG/exec';
+window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXldPxNUdf7XZUoQzQtZxLxRaiuH2hFlUiis23tqhfaDEANvHL4cpylku38R4rgwA/exec';
 
 // Replace with your Google Sheet URL (the actual spreadsheet where data is stored)
 window.GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1vRhQHTMpd3eKHHJbcUl5BLyoUynUeMtlAW1gZ2jC-6E/edit';
