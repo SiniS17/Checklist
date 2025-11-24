@@ -232,6 +232,11 @@
           <input type="text" id="login-ac" class="form-input" placeholder="Enter A/C Registration" />
         </div>
 
+        <div class="form-group">
+          <label for="login-engine">Engine Model</label>
+          <input type="text" id="login-engine" class="form-input" placeholder="Auto-filled from database" readonly style="background: #f3f4f6; cursor: not-allowed;" />
+        </div>
+
         <button id="login-btn" class="btn btn-primary" style="width: 100%; margin: 0;">
           Start Checklist →
         </button>
@@ -337,6 +342,10 @@
               <span class="report-info-value" id="display-ac">-</span>
             </div>
             <div class="report-info-row">
+              <span class="report-info-label">Engine Model:</span>
+              <span class="report-info-value" id="display-engine">-</span>
+            </div>
+            <div class="report-info-row">
               <span class="report-info-label">Date & Time:</span>
               <span class="report-info-value" id="display-datetime">-</span>
             </div>
@@ -357,6 +366,11 @@
             <div class="form-group">
               <label for="edit-ac">A/C Registration *</label>
               <input type="text" id="edit-ac" class="form-input" placeholder="Enter A/C Registration" />
+            </div>
+
+            <div class="form-group">
+              <label for="edit-engine">Engine Model</label>
+              <input type="text" id="edit-engine" class="form-input" placeholder="Enter Engine Model" />
             </div>
 
             <button id="save-edit-btn" class="btn btn-secondary">💾 Save Changes</button>
