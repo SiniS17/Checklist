@@ -64,12 +64,12 @@
   }
 
   // ID suggestions
-  const idSuggestions = ['VAE', 'VAECO', 'VJC', 'VN'];
+  const idSuggestions = ['VAE'];
   setupAutocomplete(loginIdInput, idSuggestions);
   setupAutocomplete(editIdInput, idSuggestions);
 
   // A/C Registration suggestions
-  const acSuggestions = ['VN-A', 'VN-B', 'VJ-'];
+  const acSuggestions = ['VN-A','XU'];
   setupAutocomplete(loginAcInput, acSuggestions);
   setupAutocomplete(editAcInput, acSuggestions);
 
