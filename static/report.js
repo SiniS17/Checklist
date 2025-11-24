@@ -42,18 +42,49 @@
   const editIdInput = document.getElementById('edit-id');
   const editAcInput = document.getElementById('edit-ac');
 
+  // === AUTO-COMPLETE SETUP ===
+  function setupAutocomplete(input, suggestions) {
+    if (!input) return;
+
+    input.setAttribute('autocomplete', 'off');
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const list = document.createElement('datalist');
+    list.id = input.id + '-datalist';
+    suggestions.forEach(s => {
+      const option = document.createElement('option');
+      option.value = s;
+      list.appendChild(option);
+    });
+    wrapper.appendChild(list);
+    input.setAttribute('list', list.id);
+  }
+
+  // ID suggestions
+  const idSuggestions = ['VAE', 'VAECO', 'VJC', 'VN'];
+  setupAutocomplete(loginIdInput, idSuggestions);
+  setupAutocomplete(editIdInput, idSuggestions);
+
+  // A/C Registration suggestions
+  const acSuggestions = ['VN-A', 'VN-B', 'VJ-'];
+  setupAutocomplete(loginAcInput, acSuggestions);
+  setupAutocomplete(editAcInput, acSuggestions);
+
   // === LOGIN FLOW ===
   if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-      const id = loginIdInput.value.trim();
-      const acRegis = loginAcInput.value.trim();
+      const id = loginIdInput.value.trim().toUpperCase();
+      const acRegis = loginAcInput.value.trim().toUpperCase();
 
       if (!id || !acRegis) {
         alert('Please fill in all fields');
         return;
       }
 
-      // Store user data
+      // Store user data (in uppercase)
       userData.id = id;
       userData.acRegis = acRegis;
       userData.startTime = new Date();
@@ -168,15 +199,15 @@
 
   if (saveEditBtn) {
     saveEditBtn.addEventListener('click', () => {
-      const newId = editIdInput.value.trim();
-      const newAc = editAcInput.value.trim();
+      const newId = editIdInput.value.trim().toUpperCase();
+      const newAc = editAcInput.value.trim().toUpperCase();
 
       if (!newId || !newAc) {
         alert('Please fill in all fields');
         return;
       }
 
-      // Update user data
+      // Update user data (in uppercase)
       userData.id = newId;
       userData.acRegis = newAc;
 
@@ -271,14 +302,12 @@
           },
           body: JSON.stringify({
             action: 'addReport',
-            sheetName: 'Reports',
             data: {
-              id: userData.id,
-              acRegis: userData.acRegis,
-              activeTab: activeTab,
+              id: userData.id.toUpperCase(),
+              acRegis: userData.acRegis.toUpperCase(),
+              activeTab: activeTab.toUpperCase(),
               progressCompleted: progress.completed,
               progressTotal: progress.total,
-              startTime: userData.startTime.toISOString(),
               submitTime: currentTime.toISOString()
             }
           })
