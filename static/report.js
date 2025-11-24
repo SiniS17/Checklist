@@ -6,14 +6,19 @@
   let userData = {
     id: '',
     acRegis: '',
+    engineModel: '',
     startTime: null
   };
+
+  // Aircraft database cache
+  let aircraftDatabase = [];
 
   // DOM Elements - Login
   const loginScreen = document.getElementById('login-screen');
   const loginBtn = document.getElementById('login-btn');
   const loginIdInput = document.getElementById('login-id');
   const loginAcInput = document.getElementById('login-ac');
+  const loginEngineInput = document.getElementById('login-engine');
 
   // DOM Elements - Main App
   const mainContainer = document.getElementById('main-container');
@@ -30,6 +35,7 @@
   // Display elements
   const displayId = document.getElementById('display-id');
   const displayAc = document.getElementById('display-ac');
+  const displayEngine = document.getElementById('display-engine');
   const displayDatetime = document.getElementById('display-datetime');
   const displayActiveTab = document.getElementById('display-active-tab');
   const displayProgress = document.getElementById('display-progress');
@@ -41,6 +47,7 @@
   const saveEditBtn = document.getElementById('save-edit-btn');
   const editIdInput = document.getElementById('edit-id');
   const editAcInput = document.getElementById('edit-ac');
+  const editEngineInput = document.getElementById('edit-engine');
 
   // === AUTO-COMPLETE SETUP ===
   function setupAutocomplete(input, suggestions) {
@@ -73,11 +80,92 @@
   setupAutocomplete(loginAcInput, acSuggestions);
   setupAutocomplete(editAcInput, acSuggestions);
 
+  // === AIRCRAFT DATABASE FUNCTIONS ===
+  async function loadAircraftDatabase() {
+    const dbUrl = window.AIRCRAFT_DATABASE_URL;
+    
+    if (!dbUrl || dbUrl === 'YOUR_AIRCRAFT_DATABASE_SHEET_URL_HERE') {
+      console.log('Aircraft database URL not configured');
+      return;
+    }
+
+    try {
+      // Extract spreadsheet ID from URL
+      const match = dbUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (!match) {
+        console.error('Invalid Google Sheet URL');
+        return;
+      }
+
+      const spreadsheetId = match[1];
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`;
+
+      const response = await fetch(csvUrl);
+      const csvText = await response.text();
+
+      // Parse CSV (simple parsing - assumes no commas in fields)
+      const lines = csvText.split('\n');
+      const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+      
+      const regIndex = headers.indexOf('registration');
+      const engineIndex = headers.indexOf('engine_model');
+
+      if (regIndex === -1 || engineIndex === -1) {
+        console.error('Required columns not found in aircraft database');
+        return;
+      }
+
+      // Build aircraft database
+      aircraftDatabase = [];
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values[regIndex] && values[engineIndex]) {
+          aircraftDatabase.push({
+            registration: values[regIndex].toUpperCase(),
+            engineModel: values[engineIndex]
+          });
+        }
+      }
+
+      console.log('Aircraft database loaded:', aircraftDatabase.length, 'entries');
+    } catch (error) {
+      console.error('Error loading aircraft database:', error);
+    }
+  }
+
+  function lookupEngineModel(registration) {
+    if (!registration) return '';
+    
+    const reg = registration.toUpperCase().trim();
+    const aircraft = aircraftDatabase.find(a => a.registration === reg);
+    
+    return aircraft ? aircraft.engineModel : '';
+  }
+
+  // Load aircraft database on page load
+  loadAircraftDatabase();
+
+  // Auto-fill engine model when A/C registration changes
+  if (loginAcInput && loginEngineInput) {
+    loginAcInput.addEventListener('input', () => {
+      const engineModel = lookupEngineModel(loginAcInput.value);
+      loginEngineInput.value = engineModel;
+    });
+
+    loginAcInput.addEventListener('change', () => {
+      const engineModel = lookupEngineModel(loginAcInput.value);
+      loginEngineInput.value = engineModel;
+    });
+  }
+
   // === LOGIN FLOW ===
   if (loginBtn) {
     loginBtn.addEventListener('click', () => {
       const id = loginIdInput.value.trim().toUpperCase();
       const acRegis = loginAcInput.value.trim().toUpperCase();
+      const engineModel = loginEngineInput.value.trim();
 
       if (!id || !acRegis) {
         alert('Please fill in all fields');
@@ -87,6 +175,7 @@
       // Store user data (in uppercase)
       userData.id = id;
       userData.acRegis = acRegis;
+      userData.engineModel = engineModel;
       userData.startTime = new Date();
 
       // Hide login, show app
@@ -125,6 +214,7 @@
   function updateReportDisplay() {
     if (displayId) displayId.textContent = userData.id;
     if (displayAc) displayAc.textContent = userData.acRegis;
+    if (displayEngine) displayEngine.textContent = userData.engineModel || 'N/A';
     if (displayDatetime && userData.startTime) {
       displayDatetime.textContent = userData.startTime.toLocaleString('en-US', {
         year: 'numeric',
@@ -190,6 +280,7 @@
       // Populate edit form
       editIdInput.value = userData.id;
       editAcInput.value = userData.acRegis;
+      editEngineInput.value = userData.engineModel;
 
       // Toggle display
       reportInfoDisplay.style.display = 'none';
@@ -201,6 +292,7 @@
     saveEditBtn.addEventListener('click', () => {
       const newId = editIdInput.value.trim().toUpperCase();
       const newAc = editAcInput.value.trim().toUpperCase();
+      const newEngine = editEngineInput.value.trim();
 
       if (!newId || !newAc) {
         alert('Please fill in all fields');
@@ -210,6 +302,7 @@
       // Update user data (in uppercase)
       userData.id = newId;
       userData.acRegis = newAc;
+      userData.engineModel = newEngine;
 
       // Toggle back to display
       reportEditForm.style.display = 'none';
@@ -305,6 +398,7 @@
             data: {
               id: userData.id.toUpperCase(),
               acRegis: userData.acRegis.toUpperCase(),
+              engineModel: userData.engineModel,
               activeTab: activeTab.toUpperCase(),
               progressCompleted: progress.completed,
               progressTotal: progress.total,
