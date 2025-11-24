@@ -1,10 +1,26 @@
 // Google Apps Script Configuration
 // Replace the URL below with your actual Google Apps Script Web App URL
-window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXldPxNUdf7XZUoQzQtZxLxRaiuH2hFlUiis23tqhfaDEANvHL4cpylku38R4rgwA/exec';
+window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfqWqEta4okAWFYIr3JPR9gmOZ1ijbDMkstnx0xAbchZFDepXXHswbbMKuIfFFPZPA/exec';
 
 // Replace with your Google Sheet URL (the actual spreadsheet where data is stored)
 window.GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1vRhQHTMpd3eKHHJbcUl5BLyoUynUeMtlAW1gZ2jC-6E/edit';
 
+// Replace with your Aircraft Database Google Sheet URL (for engine model lookup)
+// Format: Sheet should have columns "registration" and "engine_model"
+window.AIRCRAFT_DATABASE_URL = 'https://docs.google.com/spreadsheets/d/1ex14_HBEC8yhZNGzRoO4l003brqMmmcukuwX-tI2NU0/edit';
+
+
+// Instructions:
+// 1. Create a Google Apps Script in your Google Sheet (Extensions > Apps Script)
+// 2. Copy the code from the setup guide below
+// 3. Deploy as Web App: Deploy > New deployment
+//    - Type: Web app
+//    - Execute as: Me
+//    - Who has access: Anyone
+// 4. Copy the Web App URL and replace REPORT_SCRIPT_URL above
+// 5. Copy your Google Sheet URL and replace GOOGLE_SHEET_URL above
+
+/*
 // Instructions:
 // 1. Create a Google Apps Script in your Google Sheet (Extensions > Apps Script)
 // 2. Copy the code from the setup guide below
@@ -51,10 +67,10 @@ function doPost(e) {
     
     // Add headers if sheet is empty
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Day', 'Month', 'Year', 'Time', 'ID', 'A/C REGIS', 'CHECKLIST', 'TASK DONE']);
+      sheet.appendRow(['Day', 'Month', 'Year', 'Time', 'ID', 'A/C REGIS', 'ENGINE MODEL', 'CHECKLIST', 'TASK DONE']);
       
       // Format headers
-      const headerRange = sheet.getRange(1, 1, 1, 8);
+      const headerRange = sheet.getRange(1, 1, 1, 9);
       headerRange.setFontWeight('bold');
       headerRange.setBackground('#4285f4');
       headerRange.setFontColor('#ffffff');
@@ -67,11 +83,12 @@ function doPost(e) {
       sheet.setColumnWidth(4, 80);  // Time
       sheet.setColumnWidth(5, 100); // ID
       sheet.setColumnWidth(6, 120); // A/C REGIS
-      sheet.setColumnWidth(7, 150); // CHECKLIST
-      sheet.setColumnWidth(8, 100); // TASK DONE
+      sheet.setColumnWidth(7, 150); // ENGINE MODEL
+      sheet.setColumnWidth(8, 150); // CHECKLIST
+      sheet.setColumnWidth(9, 100); // TASK DONE
       
       // Format entire columns as text to prevent future misinterpretation
-      const allColumnsRange = sheet.getRange(2, 1, 1000, 8);
+      const allColumnsRange = sheet.getRange(2, 1, 1000, 9);
       allColumnsRange.setNumberFormat('@');
     }
     
@@ -97,12 +114,13 @@ function doPost(e) {
       time,
       data.data.id.toUpperCase(),
       data.data.acRegis.toUpperCase(),
+      data.data.engineModel,
       data.data.activeTab.toUpperCase(),
       data.data.progressCompleted + '/' + data.data.progressTotal
     ]);
     
     // Format entire row as plain text to prevent misinterpretation
-    const range = sheet.getRange(newRow, 1, 1, 8);
+    const range = sheet.getRange(newRow, 1, 1, 9);
     range.setNumberFormat('@'); // '@' means plain text format
     
     return ContentService
