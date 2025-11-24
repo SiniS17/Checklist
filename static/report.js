@@ -24,6 +24,7 @@
   const reportView = document.getElementById('report-view');
   const closeReportBtn = document.getElementById('close-report-btn');
   const submitReportBtn = document.getElementById('submit-report-btn');
+  const viewLogBtn = document.getElementById('view-log-btn');
   const statusMessage = document.getElementById('status-message');
 
   // Display elements
@@ -145,6 +146,11 @@
     // Hide edit form when closing
     if (reportEditForm) reportEditForm.style.display = 'none';
     if (reportInfoDisplay) reportInfoDisplay.style.display = 'block';
+    
+    // Reset buttons
+    if (submitReportBtn) submitReportBtn.style.display = 'inline-flex';
+    if (viewLogBtn) viewLogBtn.style.display = 'none';
+    hideStatus();
   }
 
   // === EDIT FUNCTIONALITY ===
@@ -226,6 +232,20 @@
     }
   });
 
+  // === VIEW LOG BUTTON ===
+  if (viewLogBtn) {
+    viewLogBtn.addEventListener('click', () => {
+      const sheetUrl = window.GOOGLE_SHEET_URL;
+      
+      if (sheetUrl && sheetUrl !== 'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit') {
+        // Open the Google Sheet in a new tab
+        window.open(sheetUrl, '_blank');
+      } else {
+        alert('Google Sheet URL not configured. Please update GOOGLE_SHEET_URL in static/report-config.js');
+      }
+    });
+  }
+
   // === SUBMIT REPORT ===
   if (submitReportBtn) {
     submitReportBtn.addEventListener('click', async () => {
@@ -267,10 +287,13 @@
         // Assume success (no-cors mode doesn't allow response reading)
         showStatus('success', '✓ Report submitted successfully!');
 
-        // Close modal after 2 seconds
-        setTimeout(() => {
-          closeReportModal();
-        }, 2000);
+        // Show view log button
+        if (viewLogBtn) {
+          viewLogBtn.style.display = 'inline-flex';
+        }
+
+        // Hide submit button after success
+        submitReportBtn.style.display = 'none';
 
       } catch (error) {
         showStatus('error', 'Error submitting report: ' + error.message);
