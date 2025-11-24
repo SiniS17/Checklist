@@ -1,6 +1,6 @@
 // Google Apps Script Configuration
 // Replace the URL below with your actual Google Apps Script Web App URL
-window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6thygHTdwXUvnRemy1EbmxfDXdRj_j0W5uqdT8SC3gnHosv7DMRhrdXX7F_txTIZp/exec';
+window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymuPZ2fR90ksgXVJCLmycGcRUeDx71iziasfbdhAQmZP9QmxuuojM0T2v3pJelc10T/exec';
 
 // Replace with your Google Sheet URL (the actual spreadsheet where data is stored)
 window.GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1vRhQHTMpd3eKHHJbcUl5BLyoUynUeMtlAW1gZ2jC-6E/edit';
@@ -38,30 +38,63 @@ function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName(data.sheetName);
-
+    
+    // Parse the submit time
+    const submitDate = new Date(data.data.submitTime);
+    const year = submitDate.getFullYear().toString();
+    
+    // Get or create sheet for the current year
+    let sheet = ss.getSheetByName(year);
     if (!sheet) {
-      sheet = ss.getSheets()[0];
+      sheet = ss.insertSheet(year);
     }
-
+    
     // Add headers if sheet is empty
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Time update', 'VAECO ID', 'A/C', 'Active Tab', 'Progress']);
+      sheet.appendRow(['Day', 'Month', 'Year', 'Time', 'ID', 'A/C REGIS', 'CHECKLIST', 'TASK DONE']);
+      
+      // Format headers
+      const headerRange = sheet.getRange(1, 1, 1, 8);
+      headerRange.setFontWeight('bold');
+      headerRange.setBackground('#4285f4');
+      headerRange.setFontColor('#ffffff');
+      
+      // Set column widths
+      sheet.setColumnWidth(1, 60);  // Day
+      sheet.setColumnWidth(2, 80);  // Month
+      sheet.setColumnWidth(3, 60);  // Year
+      sheet.setColumnWidth(4, 80);  // Time
+      sheet.setColumnWidth(5, 100); // ID
+      sheet.setColumnWidth(6, 120); // A/C REGIS
+      sheet.setColumnWidth(7, 150); // CHECKLIST
+      sheet.setColumnWidth(8, 100); // TASK DONE
     }
-
-    // Add the data with separate columns for active tab and progress
+    
+    // Format date and time
+    const day = submitDate.getDate().toString().padStart(2, '0');
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+                        'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const month = monthNames[submitDate.getMonth()];
+    const hours = submitDate.getHours().toString().padStart(2, '0');
+    const minutes = submitDate.getMinutes().toString().padStart(2, '0');
+    const time = hours + ':' + minutes;
+    
+    // Add the data (all text fields in uppercase)
     sheet.appendRow([
-      new Date(data.data.submitTime),
-      data.data.id,
-      data.data.acRegis,
-      data.data.activeTab,
+      day,
+      month,
+      year,
+      time,
+      data.data.id.toUpperCase(),
+      data.data.acRegis.toUpperCase(),
+      data.data.activeTab.toUpperCase(),
       data.data.progressCompleted + '/' + data.data.progressTotal
     ]);
-
+    
     return ContentService
       .createTextOutput(JSON.stringify({
         success: true,
-        message: 'Report added successfully'
+        message: 'Report added successfully to ' + year + ' sheet'
       }))
       .setMimeType(ContentService.MimeType.JSON);
 
