@@ -2,6 +2,9 @@
 // Replace the URL below with your actual Google Apps Script Web App URL
 window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6thygHTdwXUvnRemy1EbmxfDXdRj_j0W5uqdT8SC3gnHosv7DMRhrdXX7F_txTIZp/exec';
 
+// Replace with your Google Sheet URL (the actual spreadsheet where data is stored)
+window.GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit';
+
 // Instructions:
 // 1. Create a Google Apps Script in your Google Sheet (Extensions > Apps Script)
 // 2. Copy the code from the setup guide below
@@ -9,7 +12,8 @@ window.REPORT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6thygHTdwX
 //    - Type: Web app
 //    - Execute as: Me
 //    - Who has access: Anyone
-// 4. Copy the Web App URL and replace the URL above
+// 4. Copy the Web App URL and replace REPORT_SCRIPT_URL above
+// 5. Copy your Google Sheet URL and replace GOOGLE_SHEET_URL above
 
 /*
 === GOOGLE APPS SCRIPT CODE ===
